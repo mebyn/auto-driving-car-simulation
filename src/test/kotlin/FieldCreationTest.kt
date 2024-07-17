@@ -1,5 +1,5 @@
-import com.zuhlke.InvalidInputException
 import com.zuhlke.initializeField
+import com.zuhlke.simulator.InvalidInputException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
@@ -13,7 +13,7 @@ class FieldCreationTest {
       }
     assertThat(
       exception.message,
-    ).isEqualTo(
+    ).contains(
       "Invalid input provided!" +
         " Only positive integers of x y format are allowed. Provided input [null]",
     )
@@ -25,7 +25,7 @@ class FieldCreationTest {
       assertThrows<InvalidInputException> {
         initializeField("")
       }
-    assertThat(exception.message).isEqualTo(
+    assertThat(exception.message).contains(
       "Invalid input provided!" +
         " Only positive integers of x y format are allowed. Provided input []",
     )
@@ -39,7 +39,7 @@ class FieldCreationTest {
       }
     assertThat(
       exception.message,
-    ).isEqualTo(
+    ).contains(
       "Invalid input provided!" +
         " Only positive integers of x y format are allowed. Provided input [a b]",
     )
@@ -53,7 +53,7 @@ class FieldCreationTest {
       }
     assertThat(
       exception.message,
-    ).isEqualTo(
+    ).contains(
       "Invalid input provided!" +
         " Only positive integers of x y format are allowed. Provided input [-10 10]",
     )

@@ -20,6 +20,13 @@ dependencies {
 tasks.test {
   useJUnitPlatform()
 }
+
 kotlin {
   jvmToolchain(21)
+}
+
+tasks {
+  ktlintCheck {
+    dependsOn += ktlintFormat
+  }
 }
