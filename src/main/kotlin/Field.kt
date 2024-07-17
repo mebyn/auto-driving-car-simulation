@@ -1,14 +1,13 @@
 package com.zuhlke
 
-data class Field(
-  val x: Int,
-  val y: Int,
-) {
-  val grid: Array<LongArray> by lazy {
-    runCatching {
-      Array(x) { LongArray(y) }
-    }.getOrElse {
-      throw InvalidInputException("Only positive values are allowed for field size.")
-    }
+fun initializeField(input: String?) =
+  runCatching {
+    val (x, y) = input!!.split(' ').map(String::toInt)
+    Array(x) { IntArray(y) }
+  }.getOrElse {
+    throw InvalidInputException(
+      "Invalid input provided!" +
+        " Only positive integers of x y format are allowed." +
+        " Provided input [$input]",
+    )
   }
-}
