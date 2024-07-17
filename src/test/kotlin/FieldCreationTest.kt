@@ -62,6 +62,9 @@ class FieldCreationTest {
   @Test
   fun `should pass when input is 10 10`() {
     val field = initializeField("10 10")
-    assertThat(field).isNotEmpty.hasSameDimensionsAs(Array(10) { LongArray(10) })
+    assertThat(field)
+      .isNotNull
+      .hasFieldOrPropertyWithValue("width", 10L)
+      .hasFieldOrPropertyWithValue("height", 10L)
   }
 }
