@@ -1,6 +1,4 @@
-package com.zuhlke
-
-import com.zuhlke.simulator.InvalidInputException
+package com.zuhlke.simulator
 
 fun initializeField(input: String?): Field =
   runCatching {

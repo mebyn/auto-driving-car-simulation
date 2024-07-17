@@ -1,10 +1,5 @@
 package com.zuhlke.simulator
 
-import com.zuhlke.Car
-import com.zuhlke.Coordinate
-import com.zuhlke.Direction
-import com.zuhlke.initializeField
-
 object SimulatorConsole {
   fun start() {
     println("Welcome to Auto Driving Car Simulation!\n")
@@ -28,7 +23,7 @@ object SimulatorConsole {
       runCatching {
         when (readlnOrNull()) {
           "1" -> garage = addCarToGarage(garage)
-          "2" -> runSimulation(garage)
+          "2" -> ControlCentre(garage).runSimulation()
           else -> println("Invalid input provided. Only 1 or 2 is allowed\n")
         }
       }
@@ -49,18 +44,6 @@ object SimulatorConsole {
       )
     }
     return newGarage
-  }
-
-  private fun runSimulation(garage: List<CarEntry>) {
-    garage.forEach { (car, command) ->
-      println(
-        "Simulating - ${car.name}, (${car.coordinate.x}, ${car.coordinate.y}), ${car.direction.name}, ${
-          command.joinToString(
-            "",
-          )
-        } ",
-      )
-    }
   }
 
   private fun inputCarDetails(): CarEntry {

@@ -1,8 +1,20 @@
 package com.zuhlke.simulator
 
-import com.zuhlke.Car
-
-class ControlCentre
+class ControlCentre(
+  val garage: List<CarEntry>,
+) {
+  fun runSimulation() {
+    garage.forEach { (car, command) ->
+      println(
+        "Simulating - ${car.name}, (${car.coordinate.x}, ${car.coordinate.y}), ${car.direction.name}, ${
+          command.joinToString(
+            "",
+          )
+        } ",
+      )
+    }
+  }
+}
 
 data class CarEntry(
   val car: Car,

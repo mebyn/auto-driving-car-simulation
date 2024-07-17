@@ -1,4 +1,4 @@
-package com.zuhlke
+package com.zuhlke.simulator
 
 data class Car(
   val name: String,

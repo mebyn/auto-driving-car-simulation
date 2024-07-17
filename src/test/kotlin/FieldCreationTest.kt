@@ -1,5 +1,5 @@
-import com.zuhlke.initializeField
 import com.zuhlke.simulator.InvalidInputException
+import com.zuhlke.simulator.initializeField
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
