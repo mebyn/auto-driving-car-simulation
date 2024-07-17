@@ -5,6 +5,10 @@ data class Field(
   val y: Int,
 ) {
   val grid: Array<LongArray> by lazy {
-    Array(x) { LongArray(y) }
+    runCatching {
+      Array(x) { LongArray(y) }
+    }.getOrElse {
+      throw InvalidInputException("Only positive values are allowed for field size.")
+    }
   }
 }

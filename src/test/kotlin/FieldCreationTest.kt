@@ -31,6 +31,14 @@ class FieldCreationTest {
   }
 
   @Test
+  fun `should fail when input has negative size of -10 10`() {
+    val exception = assertThrows<InvalidInputException> {
+      initializeField("-10 10").grid
+    }
+    assertThat(exception.message).matches("Only positive values are allowed for field size.")
+  }
+
+  @Test
   fun `should pass when input is 10 10`() {
     val field = initializeField("10 10")
     assertThat(field.grid).isNotEmpty.hasSameDimensionsAs(Array(10) { LongArray(10) })
