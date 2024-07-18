@@ -5,34 +5,34 @@ data class Car(
   val coordinate: Coordinate,
   val direction: Direction,
 ) {
-  fun move(command: Operation): Car =
+  fun move(command: Command): Car =
     when (direction) {
       Direction.N -> {
         when (command) {
-          Operation.F -> copy(coordinate = coordinate.copy(y = coordinate.y + 1))
-          Operation.R -> copy(direction = Direction.E)
-          Operation.L -> copy(direction = Direction.W)
+          Command.F -> copy(coordinate = coordinate.copy(y = coordinate.y + 1))
+          Command.R -> copy(direction = Direction.E)
+          Command.L -> copy(direction = Direction.W)
         }
       }
       Direction.S -> {
         when (command) {
-          Operation.F -> copy(coordinate = coordinate.copy(y = coordinate.y - 1))
-          Operation.R -> copy(direction = Direction.W)
-          Operation.L -> copy(direction = Direction.E)
+          Command.F -> copy(coordinate = coordinate.copy(y = coordinate.y - 1))
+          Command.R -> copy(direction = Direction.W)
+          Command.L -> copy(direction = Direction.E)
         }
       }
       Direction.E -> {
         when (command) {
-          Operation.F -> copy(coordinate = coordinate.copy(x = coordinate.x + 1))
-          Operation.R -> copy(direction = Direction.S)
-          Operation.L -> copy(direction = Direction.N)
+          Command.F -> copy(coordinate = coordinate.copy(x = coordinate.x + 1))
+          Command.R -> copy(direction = Direction.S)
+          Command.L -> copy(direction = Direction.N)
         }
       }
       Direction.W -> {
         when (command) {
-          Operation.F -> copy(coordinate = coordinate.copy(x = coordinate.x - 1))
-          Operation.R -> copy(direction = Direction.N)
-          Operation.L -> copy(direction = Direction.S)
+          Command.F -> copy(coordinate = coordinate.copy(x = coordinate.x - 1))
+          Command.R -> copy(direction = Direction.N)
+          Command.L -> copy(direction = Direction.S)
         }
       }
     }

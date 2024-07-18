@@ -13,3 +13,4 @@
 3. Car name is made mandatory and unique (case-sensitive).
 4. Stop moving the car if the new coordinate detected is outside the specified field size (e.g. o < x < width, o < y <
    height).
+5. Stop moving the car if collision at initial state is detected.

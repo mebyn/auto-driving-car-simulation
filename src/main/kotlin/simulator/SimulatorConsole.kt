@@ -10,7 +10,7 @@ object SimulatorConsole {
       }
 
     println("You have created a field of ${field.width} x ${field.height}\n")
-    var garage = emptyList<CarEntry>()
+    var garage = emptyList<CarOperation>()
     while (true) {
       println(
         """
@@ -31,7 +31,7 @@ object SimulatorConsole {
     }
   }
 
-  private fun addCarToGarage(garage: List<CarEntry>): List<CarEntry> {
+  private fun addCarToGarage(garage: List<CarOperation>): List<CarOperation> {
     val newGarage = garage + inputCarDetails()
     println("\nYour current list of cars are: ")
     newGarage.forEach { (car, command) ->
@@ -46,7 +46,7 @@ object SimulatorConsole {
     return newGarage
   }
 
-  private fun inputCarDetails(): CarEntry {
+  private fun inputCarDetails(): CarOperation {
     val name =
       parseConsoleInput {
         print("\nPlease enter the name of the car: ")
@@ -68,11 +68,11 @@ object SimulatorConsole {
       parseConsoleInput {
         print("Please enter the commands for car $name: ")
         readlnOrNull()?.let {
-          ArrayDeque(it.chunked(1).map { op -> Operation.valueOf(op) })
+          ArrayDeque(it.chunked(1).map { op -> Command.valueOf(op) })
         } ?: throw InvalidInputException("Invalid operation/s were provided!")
       }
 
-    return CarEntry(car, commands)
+    return CarOperation(car, commands)
   }
 }
 

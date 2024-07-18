@@ -2,7 +2,7 @@ package com.zuhlke.simulator
 
 class ControlCentre(
   private val field: Field,
-  private val initialGarageState: List<CarEntry>,
+  private val initialGarageState: List<CarOperation>,
 ) {
   private val gridState: MutableMap<String, Car> =
     initialGarageState
@@ -10,18 +10,19 @@ class ControlCentre(
         it.car.name to it.car
       }.toMutableMap()
 
-  // TODO: Collision detection at car insertion step
   fun runSimulation(): List<Car> {
     val carsOnField = ArrayDeque(initialGarageState)
     var step = 0
     while (carsOnField.isNotEmpty()) {
       val processingQueue = ArrayDeque(carsOnField)
-      while (processingQueue.isNotEmpty()) {
+      while (processingQueue.isNotEmpty() && carsOnField.isNotEmpty()) {
         val (initialCarState, commands) = processingQueue.removeFirst()
         val currentCarState = gridState[initialCarState.name] ?: initialCarState
         currentCarState.drive(carsOnField)
-        val nextCarState = currentCarState.move(commands.removeFirst())
-        nextCarState.drive(carsOnField)
+        if (carsOnField.isNotEmpty()) {
+          val nextCarState = currentCarState.move(commands.removeFirst())
+          nextCarState.drive(carsOnField)
+        }
         if (commands.isEmpty()) {
           carsOnField.removeFromProcessing(initialCarState.name)
           // Add to Result
@@ -32,7 +33,7 @@ class ControlCentre(
     return gridState.values.toList()
   }
 
-  private fun Car.drive(carsOnField: ArrayDeque<CarEntry>) {
+  private fun Car.drive(carsOnField: ArrayDeque<CarOperation>) {
     val detectCollision: (String, Coordinate) -> Boolean =
       { name, coordinate ->
         gridState.values.any { it.name != name && it.coordinate == coordinate }
@@ -52,7 +53,7 @@ class ControlCentre(
     }
   }
 
-  private fun ArrayDeque<CarEntry>.handleCollision(
+  private fun ArrayDeque<CarOperation>.handleCollision(
     carNameInScope: String,
     carState: Car,
   ) {
@@ -65,7 +66,8 @@ class ControlCentre(
     gridState[carNameInScope] = carState
   }
 
-  private fun ArrayDeque<CarEntry>.removeFromProcessing(carNameInScope: String) = removeAt(indexOfFirst { it.car.name == carNameInScope })
+  private fun ArrayDeque<CarOperation>.removeFromProcessing(carNameInScope: String) =
+    removeAt(indexOfFirst { it.car.name == carNameInScope })
 }
 
 data class SimulationResult(
@@ -73,12 +75,12 @@ data class SimulationResult(
   val collidedCars: List<Car>,
 )
 
-data class CarEntry(
+data class CarOperation(
   val car: Car,
-  val commands: ArrayDeque<Operation>,
+  val commands: ArrayDeque<Command>,
 )
 
-enum class Operation {
+enum class Command {
   L, // Rotate car by 90 degrees left
   R, // Rotate car by 90 degrees right
   F, // Move car forward by 1 grid point
