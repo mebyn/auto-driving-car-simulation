@@ -10,7 +10,7 @@ class ControlCentre(
         it.car.name to CarState(it.car, emptyList())
       }.toMutableMap()
 
-  fun runSimulation(): List<Car> {
+  fun runSimulation(): List<CarState> {
     val operationQueue = ArrayDeque(inputOperations)
     var step = 0
     while (operationQueue.isNotEmpty()) {
@@ -41,7 +41,7 @@ class ControlCentre(
       }
       step++
     }
-    return gridState.values.map { it.car }.toList()
+    return gridState.values.toList()
   }
 
   private fun ArrayDeque<CarOperation>.removeCollidedCars(

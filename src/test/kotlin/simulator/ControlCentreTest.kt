@@ -31,8 +31,8 @@ class ControlCentreTest {
       ).runSimulation()
     assertThat(result).hasSize(1)
     result.first().let {
-      assertThat(it.direction).isEqualTo(Direction.S)
-      assertThat(it.coordinate)
+      assertThat(it.car.direction).isEqualTo(Direction.S)
+      assertThat(it.car.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 4L)
     }
@@ -56,8 +56,8 @@ class ControlCentreTest {
       ).runSimulation()
     assertThat(result).hasSize(1)
     result.first().let {
-      assertThat(it.direction).isEqualTo(Direction.S)
-      assertThat(it.coordinate)
+      assertThat(it.car.direction).isEqualTo(Direction.S)
+      assertThat(it.car.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 1L)
     }
@@ -81,8 +81,8 @@ class ControlCentreTest {
       ).runSimulation()
     assertThat(result).hasSize(1)
     result.first().let {
-      assertThat(it.direction).isEqualTo(Direction.S)
-      assertThat(it.coordinate)
+      assertThat(it.car.direction).isEqualTo(Direction.S)
+      assertThat(it.car.coordinate)
         .hasFieldOrPropertyWithValue("x", 2L)
         .hasFieldOrPropertyWithValue("y", 0L)
     }
@@ -106,15 +106,15 @@ class ControlCentreTest {
       ).runSimulation()
     assertThat(result).hasSize(1)
     result.first().let {
-      assertThat(it.direction).isEqualTo(Direction.N)
-      assertThat(it.coordinate)
+      assertThat(it.car.direction).isEqualTo(Direction.N)
+      assertThat(it.car.coordinate)
         .hasFieldOrPropertyWithValue("x", 4L)
         .hasFieldOrPropertyWithValue("y", 5L)
     }
   }
 
   @Test
-  fun `should stop moving the car when collision is detected`() {
+  fun `should stop moving the car when two cars collide`() {
     val initialGarageState =
       listOf(
         CarOperation(
@@ -136,19 +136,25 @@ class ControlCentreTest {
         initialGarageState,
       ).runSimulation()
     assertThat(result).hasSize(2)
-    result.find { it.name == "LAMBO" }.let {
+    result.find { it.car.name == "LAMBO" }.let {
       requireNotNull(it)
-      assertThat(it.direction).isEqualTo(Direction.E)
-      assertThat(it.coordinate)
+      assertThat(it.car.direction).isEqualTo(Direction.E)
+      assertThat(it.car.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 4L)
+      assertThat(it.collidedCars).hasSize(1)
+      assertThat(it.collidedCars)
+        .contains(Car("FERRARI", Coordinate(5, 4), Direction.S))
     }
-    result.find { it.name == "FERRARI" }.let {
+    result.find { it.car.name == "FERRARI" }.let {
       requireNotNull(it)
-      assertThat(it.direction).isEqualTo(Direction.S)
-      assertThat(it.coordinate)
+      assertThat(it.car.direction).isEqualTo(Direction.S)
+      assertThat(it.car.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 4L)
+      assertThat(it.collidedCars).hasSize(1)
+      assertThat(it.collidedCars)
+        .contains(Car("LAMBO", Coordinate(5, 4), Direction.E))
     }
   }
 
@@ -175,19 +181,25 @@ class ControlCentreTest {
         initialGarageState,
       ).runSimulation()
     assertThat(result).hasSize(2)
-    result.find { it.name == "LAMBO" }.let {
+    result.find { it.car.name == "LAMBO" }.let {
       requireNotNull(it)
-      assertThat(it.direction).isEqualTo(Direction.N)
-      assertThat(it.coordinate)
+      assertThat(it.car.direction).isEqualTo(Direction.N)
+      assertThat(it.car.coordinate)
         .hasFieldOrPropertyWithValue("x", 1L)
         .hasFieldOrPropertyWithValue("y", 2L)
+      assertThat(it.collidedCars).hasSize(1)
+      assertThat(it.collidedCars)
+        .contains(Car("FERRARI", Coordinate(1, 2), Direction.W))
     }
-    result.find { it.name == "FERRARI" }.let {
+    result.find { it.car.name == "FERRARI" }.let {
       requireNotNull(it)
-      assertThat(it.direction).isEqualTo(Direction.W)
-      assertThat(it.coordinate)
+      assertThat(it.car.direction).isEqualTo(Direction.W)
+      assertThat(it.car.coordinate)
         .hasFieldOrPropertyWithValue("x", 1L)
         .hasFieldOrPropertyWithValue("y", 2L)
+      assertThat(it.collidedCars).hasSize(1)
+      assertThat(it.collidedCars)
+        .contains(Car("LAMBO", Coordinate(1, 2), Direction.N))
     }
   }
 }
