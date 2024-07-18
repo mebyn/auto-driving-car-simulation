@@ -23,7 +23,7 @@ object SimulatorConsole {
       runCatching {
         when (readlnOrNull()) {
           "1" -> garage = addCarToGarage(garage)
-          "2" -> ControlCentre(garage).runSimulation()
+          "2" -> ControlCentre(field, garage).runSimulation()
           else -> println("Invalid input provided. Only 1 or 2 is allowed\n")
         }
       }

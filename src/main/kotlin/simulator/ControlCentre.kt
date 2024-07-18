@@ -1,10 +1,19 @@
 package com.zuhlke.simulator
 
 class ControlCentre(
-  val garage: List<CarEntry>,
+  val field: Field,
+  val initialGarageState: List<CarEntry>,
 ) {
-  fun runSimulation() {
-    garage.forEach { (car, command) ->
+  fun runSimulation(): List<CarEntry> {
+    val carsOnField = ArrayDeque(initialGarageState)
+    while (carsOnField.isNotEmpty()) {
+      for (i in 0..<carsOnField.size) {
+        val (car, commands) = carsOnField[i]
+        car.move(commands.removeFirst())
+        carsOnField.removeIf { commands.isEmpty() }
+      }
+    }
+    initialGarageState.forEach { (car, command) ->
       println(
         "Simulating - ${car.name}, (${car.coordinate.x}, ${car.coordinate.y}), ${car.direction.name}, ${
           command.joinToString(
@@ -13,6 +22,7 @@ class ControlCentre(
         } ",
       )
     }
+    return carsOnField
   }
 }
 
