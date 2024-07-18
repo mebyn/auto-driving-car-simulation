@@ -1,10 +1,12 @@
+import com.zuhlke.simulator.Coordinate
+import com.zuhlke.simulator.Field
 import com.zuhlke.simulator.InvalidInputException
 import com.zuhlke.simulator.initializeField
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
 
-class FieldCreationTest {
+class FieldTest {
   @Test
   fun `should throw exception when input is null`() {
     val exception =
@@ -66,5 +68,17 @@ class FieldCreationTest {
       .isNotNull
       .hasFieldOrPropertyWithValue("width", 10L)
       .hasFieldOrPropertyWithValue("height", 10L)
+  }
+
+  @Test
+  fun `should return true if coordinate is within bounds`() {
+    val field = Field(10, 10)
+    assertThat(field.isCoordinateWithinBounds(Coordinate(10, 10))).isTrue()
+  }
+
+  @Test
+  fun `should return false if coordinate is within bounds`() {
+    val field = Field(10, 10)
+    assertThat(field.isCoordinateWithinBounds(Coordinate(11, 10))).isFalse()
   }
 }

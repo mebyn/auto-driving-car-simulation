@@ -16,7 +16,15 @@ fun initializeField(input: String?): Field =
 data class Field(
   val width: Long,
   val height: Long,
-)
+) {
+  fun isCoordinateWithinBounds(coordinate: Coordinate) = isCoordinateOutOfBounds(coordinate).not()
+
+  private fun isCoordinateOutOfBounds(coordinate: Coordinate) =
+    coordinate.x < 0 ||
+      coordinate.x > width ||
+      coordinate.y < 0 ||
+      coordinate.y > height
+}
 
 data class Coordinate(
   val x: Long,

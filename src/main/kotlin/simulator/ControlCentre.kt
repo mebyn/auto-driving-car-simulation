@@ -1,28 +1,35 @@
 package com.zuhlke.simulator
 
 class ControlCentre(
-  val field: Field,
-  val initialGarageState: List<CarEntry>,
+  private val field: Field,
+  private val initialGarageState: List<CarEntry>,
 ) {
-  fun runSimulation(): List<CarEntry> {
-    val carsOnField = ArrayDeque(initialGarageState)
+  private val gridState: MutableMap<String, Car> =
+    initialGarageState
+      .associate {
+        it.car.name to it.car
+      }.toMutableMap()
+
+  // TODO: Collision detection
+  // TODO: Collision detection at car insertion step
+  fun runSimulation(): List<Car> {
+    val carsOnField = initialGarageState.toMutableList()
     while (carsOnField.isNotEmpty()) {
       for (i in 0..<carsOnField.size) {
-        val (car, commands) = carsOnField[i]
-        car.move(commands.removeFirst())
+        val (initialCarState, commands) = carsOnField[i]
+        val carNameInScope = initialCarState.name
+        val currentCarState = gridState[carNameInScope] ?: initialCarState
+        val newCarState = currentCarState.move(commands.removeFirst())
+        when {
+          !field.isCoordinateWithinBounds(newCarState.coordinate)
+          -> carsOnField.removeIf { it.car.name == carNameInScope }
+
+          else -> gridState[carNameInScope] = newCarState
+        }
         carsOnField.removeIf { commands.isEmpty() }
       }
     }
-    initialGarageState.forEach { (car, command) ->
-      println(
-        "Simulating - ${car.name}, (${car.coordinate.x}, ${car.coordinate.y}), ${car.direction.name}, ${
-          command.joinToString(
-            "",
-          )
-        } ",
-      )
-    }
-    return carsOnField
+    return gridState.values.toList()
   }
 }
 
