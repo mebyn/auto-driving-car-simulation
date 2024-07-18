@@ -145,6 +145,7 @@ class ControlCentreTest {
       assertThat(it.collidedCars).hasSize(1)
       assertThat(it.collidedCars)
         .contains(Car("FERRARI", Coordinate(5, 4), Direction.S))
+      assertThat(it.operationCount).isEqualTo(7)
     }
     result.find { it.car.name == "FERRARI" }.let {
       requireNotNull(it)
@@ -155,6 +156,7 @@ class ControlCentreTest {
       assertThat(it.collidedCars).hasSize(1)
       assertThat(it.collidedCars)
         .contains(Car("LAMBO", Coordinate(5, 4), Direction.E))
+      assertThat(it.operationCount).isEqualTo(7)
     }
   }
 
@@ -190,6 +192,7 @@ class ControlCentreTest {
       assertThat(it.collidedCars).hasSize(1)
       assertThat(it.collidedCars)
         .contains(Car("FERRARI", Coordinate(1, 2), Direction.W))
+      assertThat(it.operationCount).isEqualTo(0)
     }
     result.find { it.car.name == "FERRARI" }.let {
       requireNotNull(it)
@@ -200,6 +203,7 @@ class ControlCentreTest {
       assertThat(it.collidedCars).hasSize(1)
       assertThat(it.collidedCars)
         .contains(Car("LAMBO", Coordinate(1, 2), Direction.N))
+      assertThat(it.operationCount).isEqualTo(0)
     }
   }
 }
