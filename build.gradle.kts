@@ -14,6 +14,7 @@ dependencies {
   implementation("com.michael-bull.kotlin-result:kotlin-result:2.0.0")
 
   testImplementation(kotlin("test"))
+  testImplementation("io.mockk:mockk:1.13.12")
   testImplementation("org.assertj:assertj-core:3.25.1")
 }
 
