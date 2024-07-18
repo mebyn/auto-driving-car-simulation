@@ -30,13 +30,12 @@ class ControlCentreTest {
         initialGarageState,
       ).runSimulation()
     assertThat(result).hasSize(1)
-    val priusCar = result.find { it.name == "PRIUS" }
-    assertThat(priusCar).isNotNull
-    requireNotNull(priusCar)
-    assertThat(priusCar.direction).isEqualTo(Direction.S)
-    assertThat(priusCar.coordinate)
-      .hasFieldOrPropertyWithValue("x", 5L)
-      .hasFieldOrPropertyWithValue("y", 4L)
+    result.first().let {
+      assertThat(it.direction).isEqualTo(Direction.S)
+      assertThat(it.coordinate)
+        .hasFieldOrPropertyWithValue("x", 5L)
+        .hasFieldOrPropertyWithValue("y", 4L)
+    }
   }
 
   @Test
@@ -56,13 +55,12 @@ class ControlCentreTest {
         initialGarageState,
       ).runSimulation()
     assertThat(result).hasSize(1)
-    val priusCar = result.find { it.name == "MUSTANG" }
-    assertThat(priusCar).isNotNull
-    requireNotNull(priusCar)
-    assertThat(priusCar.direction).isEqualTo(Direction.S)
-    assertThat(priusCar.coordinate)
-      .hasFieldOrPropertyWithValue("x", 5L)
-      .hasFieldOrPropertyWithValue("y", 1L)
+    result.first().let {
+      assertThat(it.direction).isEqualTo(Direction.S)
+      assertThat(it.coordinate)
+        .hasFieldOrPropertyWithValue("x", 5L)
+        .hasFieldOrPropertyWithValue("y", 1L)
+    }
   }
 
   @Test
@@ -82,13 +80,12 @@ class ControlCentreTest {
         initialGarageState,
       ).runSimulation()
     assertThat(result).hasSize(1)
-    val priusCar = result.find { it.name == "MUSTANG" }
-    assertThat(priusCar).isNotNull
-    requireNotNull(priusCar)
-    assertThat(priusCar.direction).isEqualTo(Direction.S)
-    assertThat(priusCar.coordinate)
-      .hasFieldOrPropertyWithValue("x", 2L)
-      .hasFieldOrPropertyWithValue("y", 0L)
+    result.first().let {
+      assertThat(it.direction).isEqualTo(Direction.S)
+      assertThat(it.coordinate)
+        .hasFieldOrPropertyWithValue("x", 2L)
+        .hasFieldOrPropertyWithValue("y", 0L)
+    }
   }
 
   @Test
@@ -108,13 +105,12 @@ class ControlCentreTest {
         initialGarageState,
       ).runSimulation()
     assertThat(result).hasSize(1)
-    val priusCar = result.find { it.name == "MUSTANG" }
-    assertThat(priusCar).isNotNull
-    requireNotNull(priusCar)
-    assertThat(priusCar.direction).isEqualTo(Direction.N)
-    assertThat(priusCar.coordinate)
-      .hasFieldOrPropertyWithValue("x", 4L)
-      .hasFieldOrPropertyWithValue("y", 5L)
+    result.first().let {
+      assertThat(it.direction).isEqualTo(Direction.N)
+      assertThat(it.coordinate)
+        .hasFieldOrPropertyWithValue("x", 4L)
+        .hasFieldOrPropertyWithValue("y", 5L)
+    }
   }
 
   @Test

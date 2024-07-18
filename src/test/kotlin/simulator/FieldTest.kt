@@ -1,3 +1,5 @@
+package simulator
+
 import com.zuhlke.simulator.Coordinate
 import com.zuhlke.simulator.Field
 import com.zuhlke.simulator.InvalidInputException
