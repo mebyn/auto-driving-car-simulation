@@ -119,5 +119,40 @@ class ControlCentreTest {
 
   @Test
   fun `should stop moving the car when collision is detected`() {
+    val initialGarageState =
+      listOf(
+        CarEntry(
+          Car("LAMBO", Coordinate(1, 2), Direction.N),
+          ArrayDeque(
+            listOf(F, F, R, F, F, F, F, R, R, L),
+          ),
+        ),
+        CarEntry(
+          Car("FERRARI", Coordinate(7, 8), Direction.W),
+          ArrayDeque(
+            listOf(F, F, L, F, F, F, F, F, F, F),
+          ),
+        ),
+      )
+    val result =
+      ControlCentre(
+        Field(10, 10),
+        initialGarageState,
+      ).runSimulation()
+    assertThat(result).hasSize(2)
+    result.find { it.name == "LAMBO" }.let {
+      requireNotNull(it)
+      assertThat(it.direction).isEqualTo(Direction.E)
+      assertThat(it.coordinate)
+        .hasFieldOrPropertyWithValue("x", 5L)
+        .hasFieldOrPropertyWithValue("y", 4L)
+    }
+    result.find { it.name == "FERRARI" }.let {
+      requireNotNull(it)
+      assertThat(it.direction).isEqualTo(Direction.S)
+      assertThat(it.coordinate)
+        .hasFieldOrPropertyWithValue("x", 5L)
+        .hasFieldOrPropertyWithValue("y", 4L)
+    }
   }
 }

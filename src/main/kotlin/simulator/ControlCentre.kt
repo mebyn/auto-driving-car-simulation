@@ -13,20 +13,31 @@ class ControlCentre(
   // TODO: Collision detection
   // TODO: Collision detection at car insertion step
   fun runSimulation(): List<Car> {
-    val carsOnField = initialGarageState.toMutableList()
+    val carsOnField = ArrayDeque(initialGarageState)
     while (carsOnField.isNotEmpty()) {
-      for (i in 0..<carsOnField.size) {
-        val (initialCarState, commands) = carsOnField[i]
+      val currentQueue = ArrayDeque(carsOnField)
+      while (currentQueue.isNotEmpty()) {
+        val (initialCarState, commands) = currentQueue.removeFirst()
         val carNameInScope = initialCarState.name
         val currentCarState = gridState[carNameInScope] ?: initialCarState
         val newCarState = currentCarState.move(commands.removeFirst())
         when {
           !field.isCoordinateWithinBounds(newCarState.coordinate)
-          -> carsOnField.removeIf { it.car.name == carNameInScope }
+          -> carsOnField.removeAt(carsOnField.indexOfFirst { it.car.name == carNameInScope })
+          // Collision Detect
+          gridState.values.any { it.name != carNameInScope && it.coordinate == newCarState.coordinate } -> {
+            gridState.values
+              .filter { it.name != carNameInScope && it.coordinate == newCarState.coordinate }
+              .forEach { collidedCar ->
+                carsOnField.removeAt(carsOnField.indexOfFirst { it.car.name == collidedCar.name })
+              }
+            carsOnField.removeAt(carsOnField.indexOfFirst { it.car.name == carNameInScope })
+            gridState[carNameInScope] = newCarState
+          }
 
           else -> gridState[carNameInScope] = newCarState
         }
-        carsOnField.removeIf { commands.isEmpty() }
+        if (commands.isEmpty()) carsOnField.removeAt(carsOnField.indexOfFirst { it.car.name == carNameInScope })
       }
     }
     return gridState.values.toList()
