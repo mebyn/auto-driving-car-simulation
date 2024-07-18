@@ -17,13 +17,13 @@ data class Field(
   val width: Long,
   val height: Long,
 ) {
-  fun isCoordinateWithinBounds(coordinate: Coordinate) = isCoordinateOutOfBounds(coordinate).not()
+  fun isCoordinateWithinBoundary(coordinate: Coordinate) = isCoordinateOutOfBounds(coordinate).not()
 
   private fun isCoordinateOutOfBounds(coordinate: Coordinate) =
-    coordinate.x < 0 ||
-      coordinate.x > width ||
-      coordinate.y < 0 ||
-      coordinate.y > height
+    coordinate.x <= 0 ||
+      coordinate.x >= width ||
+      coordinate.y <= 0 ||
+      coordinate.y >= height
 }
 
 data class Coordinate(

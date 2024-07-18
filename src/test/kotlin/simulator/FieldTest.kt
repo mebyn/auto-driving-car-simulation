@@ -73,14 +73,20 @@ class FieldTest {
   }
 
   @Test
-  fun `should return true if coordinate is within bounds`() {
+  fun `should return true if coordinate is inside the boundary`() {
     val field = Field(10, 10)
-    assertThat(field.isCoordinateWithinBounds(Coordinate(10, 10))).isTrue()
+    assertThat(field.isCoordinateWithinBoundary(Coordinate(9, 9))).isTrue()
   }
 
   @Test
-  fun `should return false if coordinate is within bounds`() {
+  fun `should return false if coordinate is at the boundary`() {
     val field = Field(10, 10)
-    assertThat(field.isCoordinateWithinBounds(Coordinate(11, 10))).isFalse()
+    assertThat(field.isCoordinateWithinBoundary(Coordinate(10, 10))).isFalse()
+  }
+
+  @Test
+  fun `should return false if coordinate is within boundary`() {
+    val field = Field(10, 10)
+    assertThat(field.isCoordinateWithinBoundary(Coordinate(11, 10))).isFalse()
   }
 }

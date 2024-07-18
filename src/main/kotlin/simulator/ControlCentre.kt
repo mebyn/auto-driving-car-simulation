@@ -2,75 +2,63 @@ package com.zuhlke.simulator
 
 class ControlCentre(
   private val field: Field,
-  private val initialGarageState: List<CarOperation>,
+  private val inputOperations: List<CarOperation>,
 ) {
-  private val gridState: MutableMap<String, Car> =
-    initialGarageState
+  private val gridState: MutableMap<String, CarState> =
+    inputOperations
       .associate {
-        it.car.name to it.car
+        it.car.name to CarState(it.car, emptyList())
       }.toMutableMap()
 
   fun runSimulation(): List<Car> {
-    val carsOnField = ArrayDeque(initialGarageState)
+    val operationQueue = ArrayDeque(inputOperations)
     var step = 0
-    while (carsOnField.isNotEmpty()) {
-      val processingQueue = ArrayDeque(carsOnField)
-      while (processingQueue.isNotEmpty() && carsOnField.isNotEmpty()) {
-        val (initialCarState, commands) = processingQueue.removeFirst()
-        val currentCarState = gridState[initialCarState.name] ?: initialCarState
-        currentCarState.drive(carsOnField)
-        if (carsOnField.isNotEmpty()) {
-          val nextCarState = currentCarState.move(commands.removeFirst())
-          nextCarState.drive(carsOnField)
+    while (operationQueue.isNotEmpty()) {
+      val processingQueue = ArrayDeque(operationQueue)
+      while (operationQueue.isNotEmpty() && processingQueue.isNotEmpty()) {
+        val (carToProcess, commands) = processingQueue.removeFirst()
+        val currentState = gridState[carToProcess.name] ?: throw IllegalStateException("Car should exist in the grid")
+        val car = (currentState.car)
+        val indexAtQueue = operationQueue.indexOfFirst { it.car.name == car.name }
+        when {
+          !field.isCoordinateWithinBoundary(car.coordinate) -> operationQueue.removeAt(indexAtQueue)
+
+          car.hasCollision -> {
+            operationQueue.removeAt(indexAtQueue)
+            val filterCollidedCars: (String) -> Map<String, CarState> = {
+              gridState
+                .filter { (name, carState) -> name != it && carState.car.coordinate == car.coordinate }
+            }
+            val collidedCars = filterCollidedCars(car.name)
+            gridState[car.name] =
+              currentState.copy(car = car, collidedCars = collidedCars.values.map { it.car })
+            operationQueue.removeCollidedCars(collidedCars, filterCollidedCars)
+          }
+
+          else -> gridState[car.name] = currentState.copy(car = car.move(commands.removeFirst()))
         }
-        if (commands.isEmpty()) {
-          carsOnField.removeFromProcessing(initialCarState.name)
-          // Add to Result
-        }
+        if (commands.isEmpty()) operationQueue.removeAt(indexAtQueue)
       }
       step++
     }
-    return gridState.values.toList()
+    return gridState.values.map { it.car }.toList()
   }
 
-  private fun Car.drive(carsOnField: ArrayDeque<CarOperation>) {
-    val detectCollision: (String, Coordinate) -> Boolean =
-      { name, coordinate ->
-        gridState.values.any { it.name != name && it.coordinate == coordinate }
-      }
-    when {
-      !field.isCoordinateWithinBounds(coordinate)
-      -> {
-        carsOnField.removeFromProcessing(name)
-        // Add to result
-      }
-      // Collision Detect
-      detectCollision(name, coordinate) -> {
-        carsOnField.handleCollision(name, this)
-      }
-
-      else -> gridState[name] = this
+  private fun ArrayDeque<CarOperation>.removeCollidedCars(
+    collidedCars: Map<String, CarState>,
+    filterCollidedCars: (String) -> Map<String, CarState>,
+  ) {
+    collidedCars.forEach { (name, state) ->
+      removeAt(indexOfFirst { it.car.name == name })
+      gridState[name] = state.copy(collidedCars = filterCollidedCars(name).map { it.value.car })
     }
   }
 
-  private fun ArrayDeque<CarOperation>.handleCollision(
-    carNameInScope: String,
-    carState: Car,
-  ) {
-    gridState.values
-      .filter { it.name != carNameInScope && it.coordinate == carState.coordinate }
-      .forEach { collidedCar ->
-        removeFromProcessing(collidedCar.name)
-      }
-    removeFromProcessing(carNameInScope)
-    gridState[carNameInScope] = carState
-  }
-
-  private fun ArrayDeque<CarOperation>.removeFromProcessing(carNameInScope: String) =
-    removeAt(indexOfFirst { it.car.name == carNameInScope })
+  private val Car.hasCollision
+    get() = gridState.any { it.key != name && it.value.car.coordinate == coordinate }
 }
 
-data class SimulationResult(
+data class CarState(
   val car: Car,
   val collidedCars: List<Car>,
 )
