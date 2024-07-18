@@ -6,4 +6,4 @@
 ## Assumptions
 1. No limit constraint was specified for the field size, thus max limit of Long data type is used.
 2. No error handling was specified for negative field size. Console will continuously parse for input if invalid value is provided.
-3. Car name is made mandatory
+3. Car name is made mandatory.
