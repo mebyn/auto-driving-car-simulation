@@ -9,8 +9,12 @@
 ### CLI Application
 - Invoke `main()` in `AutoDrivingCarSimulator.kt`
 - Execute at project root `./gradlew run -q --console=plain` 
-### Tests | [Test Report](test-report/index.html)
-Execute at project root `./gradlew test`. Will generate an HTML test report at `{projectDir}/test-report`
+### Test Evidences | [Test Report](test-report/index.html)
+- Execute at project root `./gradlew test`. Will generate an HTML test report at `{projectDir}/test-report`
+### Scenario 1
+![scenario-1.png](readme-artifacts/scenario-1.png)
+### Scenario 2
+![scenario-2.png](readme-artifacts/scenario-2.png)
 
 ## Technical Decisions
 

@@ -22,7 +22,10 @@ object SimulatorConsole {
       println("You have created a field of ${field.width} x ${field.height}\n")
       when (simulate(field)) {
         ConsoleCommand.START_OVER -> continue
-        ConsoleCommand.EXIT -> return
+        ConsoleCommand.EXIT -> {
+          println("\nThank you for running the simulation. Goodbye!")
+          return
+        }
       }
     }
   }
