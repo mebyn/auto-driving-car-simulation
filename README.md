@@ -5,11 +5,21 @@
 1. Kotlin 2.0
 2. JDK 21
 
+## How to run
+### CLI Application
+- Invoke `main()` in `AutoDrivingCarSimulator.kt`
+- Execute at project root `./gradlew run -q --console=plain` 
+### Tests
+Execute at project root `./gradlew test`
+
 ## Technical Decisions
 
+- Test driven development (TDD) approach was used to cover of all the different known scenarios that may occur in the
+  field.
 - To keep the application simple, a basic CLI that reads `System.in` was used for user input.
 - The control centre will be the one responsible in instructing the car of the next operation and detecting if any
   collisions occur.
+- Kept dependencies to a minimum with only `JUnit 5` and `AssertJ` for test and `ktlint` to avoid bikeshedding.
 
 ## Assumptions
 
