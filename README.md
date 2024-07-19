@@ -11,6 +11,8 @@
 - Execute at project root `./gradlew run -q --console=plain` 
 ### Test Evidences | [Test Report](test-report.html)
 - Execute at project root `./gradlew test`. Will generate an HTML test report at `{projectDir}/test-report`
+### Test Suite
+![test-suite.png](readme-artifacts/test-suite.png)
 ### Scenario 1
 #### Exit
 ![scenario-1-exit.png](readme-artifacts/scenario-1-exit.png)
