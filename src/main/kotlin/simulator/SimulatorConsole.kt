@@ -1,16 +1,29 @@
 package com.zuhlke.simulator
 
+import com.zuhlke.simulator.vehicle.Car
+import com.zuhlke.simulator.vehicle.Direction
+
 object SimulatorConsole {
   fun start() {
-    println("Welcome to Auto Driving Car Simulation!\n")
-    val field =
-      parseConsoleInput {
-        print("Please enter the width and height of the simulation field in x y format: ")
-        initializeField(readlnOrNull())
-      }
+    while (true) {
+      println("Welcome to Auto Driving Car Simulation!\n")
+      val field =
+        parseConsoleInput {
+          print("Please enter the width and height of the simulation field in x y format: ")
+          initializeField(readlnOrNull())
+        }
 
-    println("You have created a field of ${field.width} x ${field.height}\n")
-    var garage = emptyList<CarOperation>()
+      println("You have created a field of ${field.width} x ${field.height}\n")
+      when (simulate(field)) {
+        ConsoleCommand.START_OVER -> continue
+        ConsoleCommand.EXIT -> return
+        ConsoleCommand.UNKNOWN -> println("Invalid input provided. Only 1 or 2 is allowed\n")
+      }
+    }
+  }
+
+  private fun simulate(field: Field): ConsoleCommand {
+    var operations = emptyList<CarOperation>()
     while (true) {
       println(
         """
@@ -22,8 +35,9 @@ object SimulatorConsole {
       print("Your input: ")
       runCatching {
         when (readlnOrNull()) {
-          "1" -> garage = addCarToGarage(garage)
-          "2" -> ControlCentre(field, garage).runSimulation()
+          "1" -> operations = addNewOperation(operations)
+          "2" -> return runSimulation(field, operations)
+
           else -> println("Invalid input provided. Only 1 or 2 is allowed\n")
         }
       }
@@ -31,19 +45,67 @@ object SimulatorConsole {
     }
   }
 
-  private fun addCarToGarage(garage: List<CarOperation>): List<CarOperation> {
-    val newGarage = garage + inputCarDetails()
-    println("\nYour current list of cars are: ")
-    newGarage.forEach { (car, command) ->
+  private fun runSimulation(
+    field: Field,
+    operations: List<CarOperation>,
+  ): ConsoleCommand {
+    val simulationResult = ControlCentre(field, operations).runSimulation()
+    printListOfCars(operations)
+    println("\nAfter simulation, the result is:")
+    val simulationMessages =
+      simulationResult.map {
+        when {
+          it.collisionInfo != null -> {
+            val carsCollided =
+              it.collisionInfo.collidedCars.joinToString { cc ->
+                "${cc.name} at (${cc.coordinate.x},${cc.coordinate.y})"
+              }
+            "${it.car.name}, collides with $carsCollided at step ${it.collisionInfo.step}"
+          }
+
+          else -> "${it.car.name}, (${it.car.coordinate.x}, ${it.car.coordinate.y}), ${it.car.direction.name}"
+        }
+      }
+    simulationMessages.forEach { println("- $it") }
+    return parseConsoleInput {
+      println()
       println(
-        "- ${car.name}, (${car.coordinate.x}, ${car.coordinate.y}), ${car.direction.name}, ${
-          command.joinToString(
-            "",
-          )
-        } ",
+        """
+        Please choose from the following options:
+        [1] Start over
+        [2] Exit
+        """.trimIndent(),
+      )
+      when (readlnOrNull()) {
+        "1" -> ConsoleCommand.START_OVER
+        "2" -> ConsoleCommand.EXIT
+        else -> ConsoleCommand.UNKNOWN
+      }
+    }
+  }
+
+  private fun addNewOperation(operations: List<CarOperation>): List<CarOperation> =
+    (operations + inputCarDetails()).also {
+      printListOfCars(it)
+    }
+
+  private fun printListOfCars(operations: List<CarOperation>) {
+    println("\nYour current list of cars are: ")
+    operations.forEach { (car, commands) ->
+      val carInformation =
+        listOfNotNull(
+          car.name,
+          "(${car.coordinate.x}, ${car.coordinate.y})",
+          car.direction.name,
+          commands
+            .joinToString(
+              "",
+            ).ifEmpty { null },
+        )
+      println(
+        "- ${carInformation.joinToString()}",
       )
     }
-    return newGarage
   }
 
   private fun inputCarDetails(): CarOperation {
@@ -74,6 +136,12 @@ object SimulatorConsole {
 
     return CarOperation(car, commands)
   }
+}
+
+enum class ConsoleCommand {
+  START_OVER,
+  EXIT,
+  UNKNOWN,
 }
 
 class InvalidInputException(

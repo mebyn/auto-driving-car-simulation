@@ -10,62 +10,62 @@ import kotlin.test.Test
 
 class FieldTest {
   @Test
-  fun `should throw exception when input is null`() {
-    val exception =
-      assertThrows<InvalidInputException> {
-        initializeField(null)
-      }
-    assertThat(
-      exception.message,
-    ).contains(
-      "Invalid input provided!" +
-        " Only positive integers of x y format are allowed. Provided input [null]",
-    )
+  fun `should throw exception when input null is provided for field generation`() {
+    assertThrows<InvalidInputException> {
+      initializeField(null)
+    }.let { exception ->
+      assertThat(
+        exception.message,
+      ).contains(
+        "Invalid input provided!" +
+          " Only positive integers of x y format are allowed. Provided input [null]",
+      )
+    }
   }
 
   @Test
-  fun `should throw exception when input is empty`() {
-    val exception =
-      assertThrows<InvalidInputException> {
-        initializeField("")
-      }
-    assertThat(exception.message).contains(
-      "Invalid input provided!" +
-        " Only positive integers of x y format are allowed. Provided input []",
-    )
+  fun `should throw exception when input is empty for field generation`() {
+    assertThrows<InvalidInputException> {
+      initializeField("")
+    }.let { exception ->
+      assertThat(exception.message).contains(
+        "Invalid input provided!" +
+          " Only positive integers of x y format are allowed. Provided input []",
+      )
+    }
   }
 
   @Test
   fun `should throw exception when input is a b`() {
-    val exception =
-      assertThrows<InvalidInputException> {
-        initializeField("a b")
-      }
-    assertThat(
-      exception.message,
-    ).contains(
-      "Invalid input provided!" +
-        " Only positive integers of x y format are allowed. Provided input [a b]",
-    )
+    assertThrows<InvalidInputException> {
+      initializeField("a b")
+    }.let { exception ->
+      assertThat(
+        exception.message,
+      ).contains(
+        "Invalid input provided!" +
+          " Only positive integers of x y format are allowed. Provided input [a b]",
+      )
+    }
   }
 
   @Test
   fun `should fail when input has negative size of -10 10`() {
-    val exception =
-      assertThrows<InvalidInputException> {
-        initializeField("-10 10")
-      }
-    assertThat(
-      exception.message,
-    ).contains(
-      "Invalid input provided!" +
-        " Only positive integers of x y format are allowed. Provided input [-10 10]",
-    )
+    assertThrows<InvalidInputException> {
+      initializeField("-10 10")
+    }.let { exception ->
+      assertThat(exception.message).contains(
+        "Invalid input provided!" +
+          " Only positive integers of x y format are allowed. Provided input [-10 10]",
+      )
+    }
   }
 
   @Test
   fun `should pass when input is 10 10`() {
-    val field = initializeField("10 10")
+    val field =
+      initializeField("10 10")
+
     assertThat(field)
       .isNotNull
       .hasFieldOrPropertyWithValue("width", 10L)

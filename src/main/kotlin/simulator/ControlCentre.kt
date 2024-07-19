@@ -1,5 +1,7 @@
 package com.zuhlke.simulator
 
+import com.zuhlke.simulator.vehicle.Car
+
 class ControlCentre(
   private val field: Field,
   private val inputOperations: List<CarOperation>,
@@ -9,9 +11,13 @@ class ControlCentre(
       .associate {
         it.car.name to OperationState(it.car)
       }.toMutableMap()
+  private val copyOperations =
+    inputOperations.map {
+      it.copy(commands = ArrayDeque(it.commands))
+    }
 
   fun runSimulation(): List<OperationState> {
-    val operationQueue = ArrayDeque(inputOperations)
+    val operationQueue = ArrayDeque(copyOperations)
     var step = 0
     while (operationQueue.isNotEmpty()) {
       val processingQueue = ArrayDeque(operationQueue)
@@ -74,23 +80,7 @@ class ControlCentre(
     get() = gridState.any { it.key != name && it.value.car.coordinate == coordinate }
 }
 
-data class OperationState(
-  val car: Car,
-  val collisionInfo: CollisionInfo? = null,
-)
-
-data class CollisionInfo(
-  val collidedCars: List<Car> = emptyList(),
-  val step: Int = 0,
-)
-
 data class CarOperation(
   val car: Car,
   val commands: ArrayDeque<Command>,
 )
-
-enum class Command {
-  L, // Rotate car by 90 degrees left
-  R, // Rotate car by 90 degrees right
-  F, // Move car forward by 1 grid point
-}

@@ -1,4 +1,7 @@
-package com.zuhlke.simulator
+package com.zuhlke.simulator.vehicle
+
+import com.zuhlke.simulator.Command
+import com.zuhlke.simulator.Coordinate
 
 data class Car(
   val name: String,
@@ -36,11 +39,4 @@ data class Car(
         }
       }
     }
-}
-
-enum class Direction {
-  N,
-  S,
-  E,
-  W,
 }

@@ -1,21 +1,21 @@
 package simulator
 
-import com.zuhlke.simulator.Car
 import com.zuhlke.simulator.CarOperation
 import com.zuhlke.simulator.Command.F
 import com.zuhlke.simulator.Command.L
 import com.zuhlke.simulator.Command.R
 import com.zuhlke.simulator.ControlCentre
 import com.zuhlke.simulator.Coordinate
-import com.zuhlke.simulator.Direction
 import com.zuhlke.simulator.Field
+import com.zuhlke.simulator.vehicle.Car
+import com.zuhlke.simulator.vehicle.Direction
 import org.assertj.core.api.Assertions.assertThat
 import kotlin.test.Test
 
 class ControlCentreTest {
   @Test
   fun `should move one car to correct position with correct direction after command FFRFFFFRRL`() {
-    val initialGarageState =
+    val operations =
       listOf(
         CarOperation(
           Car("PRIUS", Coordinate(1, 2), Direction.N),
@@ -27,7 +27,7 @@ class ControlCentreTest {
     val result =
       ControlCentre(
         Field(10, 10),
-        initialGarageState,
+        operations,
       ).runSimulation()
     assertThat(result).hasSize(1)
     result.first().let {
@@ -40,7 +40,7 @@ class ControlCentreTest {
 
   @Test
   fun `should move one car to correct position with correct direction after command FFLFFFFFFF`() {
-    val initialGarageState =
+    val operations =
       listOf(
         CarOperation(
           Car("MUSTANG", Coordinate(7, 8), Direction.W),
@@ -52,7 +52,7 @@ class ControlCentreTest {
     val result =
       ControlCentre(
         Field(10, 10),
-        initialGarageState,
+        operations,
       ).runSimulation()
     assertThat(result).hasSize(1)
     result.first().let {
@@ -65,7 +65,7 @@ class ControlCentreTest {
 
   @Test
   fun `should stop moving the car and return last position if move coordinate is less than 0`() {
-    val initialGarageState =
+    val operations =
       listOf(
         CarOperation(
           Car("MUSTANG", Coordinate(3, 3), Direction.W),
@@ -77,7 +77,7 @@ class ControlCentreTest {
     val result =
       ControlCentre(
         Field(5, 5),
-        initialGarageState,
+        operations,
       ).runSimulation()
     assertThat(result).hasSize(1)
     result.first().let {
@@ -90,7 +90,7 @@ class ControlCentreTest {
 
   @Test
   fun `should stop moving the car and return last position if move coordinate is greater than field size`() {
-    val initialGarageState =
+    val operations =
       listOf(
         CarOperation(
           Car("MUSTANG", Coordinate(3, 3), Direction.E),
@@ -102,7 +102,7 @@ class ControlCentreTest {
     val result =
       ControlCentre(
         Field(5, 5),
-        initialGarageState,
+        operations,
       ).runSimulation()
     assertThat(result).hasSize(1)
     result.first().let {
@@ -115,7 +115,7 @@ class ControlCentreTest {
 
   @Test
   fun `should stop moving the car when two cars collide`() {
-    val initialGarageState =
+    val operations =
       listOf(
         CarOperation(
           Car("LAMBO", Coordinate(1, 2), Direction.N),
@@ -133,7 +133,7 @@ class ControlCentreTest {
     val result =
       ControlCentre(
         Field(10, 10),
-        initialGarageState,
+        operations,
       ).runSimulation()
     assertThat(result).hasSize(2)
     result.find { it.car.name == "LAMBO" }.let {
@@ -166,7 +166,7 @@ class ControlCentreTest {
 
   @Test
   fun `should stop moving the car when collision is detected at initial positions`() {
-    val initialGarageState =
+    val operations =
       listOf(
         CarOperation(
           Car("LAMBO", Coordinate(1, 2), Direction.N),
@@ -184,7 +184,7 @@ class ControlCentreTest {
     val result =
       ControlCentre(
         Field(10, 10),
-        initialGarageState,
+        operations,
       ).runSimulation()
     assertThat(result).hasSize(2)
     result.find { it.car.name == "LAMBO" }.let {
@@ -217,7 +217,7 @@ class ControlCentreTest {
 
   @Test
   fun `should stop moving the car when three cars collide`() {
-    val initialGarageState =
+    val operations =
       listOf(
         CarOperation(
           Car("LAMBO", Coordinate(1, 2), Direction.N),
@@ -241,7 +241,7 @@ class ControlCentreTest {
     val result =
       ControlCentre(
         Field(10, 10),
-        initialGarageState,
+        operations,
       ).runSimulation()
     assertThat(result).hasSize(3)
     result.find { it.car.name == "LAMBO" }.let {

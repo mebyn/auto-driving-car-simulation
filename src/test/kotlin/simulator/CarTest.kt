@@ -1,9 +1,9 @@
 package simulator
 
-import com.zuhlke.simulator.Car
 import com.zuhlke.simulator.Command
 import com.zuhlke.simulator.Coordinate
-import com.zuhlke.simulator.Direction
+import com.zuhlke.simulator.vehicle.Car
+import com.zuhlke.simulator.vehicle.Direction
 import org.assertj.core.api.Assertions.assertThat
 import kotlin.test.Test
 
