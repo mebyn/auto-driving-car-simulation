@@ -7,7 +7,7 @@ class ControlCentre(
   private val gridState: MutableMap<String, OperationState> =
     inputOperations
       .associate {
-        it.car.name to OperationState(it.car, emptyList())
+        it.car.name to OperationState(it.car)
       }.toMutableMap()
 
   fun runSimulation(): List<OperationState> {
@@ -31,13 +31,23 @@ class ControlCentre(
             }
             val collidedCars = filterCollidedCars(car.name)
             gridState[car.name] =
-              currentState.copy(car = car, collidedCars = collidedCars.values.map { it.car }, operationCount = step)
-            val removedCars = operationQueue.removeCollidedCars(collidedCars)
+              currentState.copy(
+                car = car,
+                collisionInfo = CollisionInfo(collidedCars = collidedCars.values.map { it.car }, step = step),
+              )
+            val removedCars =
+              run {
+                processingQueue.removeCollidedCars(collidedCars)
+                operationQueue.removeCollidedCars(collidedCars)
+              }
             removedCars.forEach { (name, state) ->
               gridState[name] =
                 state.copy(
-                  collidedCars = filterCollidedCars(name).map { entry -> entry.value.car },
-                  operationCount = step,
+                  collisionInfo =
+                    CollisionInfo(
+                      collidedCars = filterCollidedCars(name).map { entry -> entry.value.car },
+                      step = step,
+                    ),
                 )
             }
           }
@@ -54,7 +64,9 @@ class ControlCentre(
   private fun ArrayDeque<CarOperation>.removeCollidedCars(collidedCars: Map<String, OperationState>) =
     collidedCars
       .map { (name, state) ->
-        removeAt(indexOfFirst { it.car.name == name })
+        indexOfFirst { it.car.name == name }.takeIf { it >= 0 }?.let {
+          removeAt(it)
+        }
         name to state
       }.toMap()
 
@@ -64,8 +76,12 @@ class ControlCentre(
 
 data class OperationState(
   val car: Car,
-  val collidedCars: List<Car>,
-  val operationCount: Int = 0,
+  val collisionInfo: CollisionInfo? = null,
+)
+
+data class CollisionInfo(
+  val collidedCars: List<Car> = emptyList(),
+  val step: Int = 0,
 )
 
 data class CarOperation(
