@@ -31,6 +31,8 @@ kotlin {
 tasks {
   test {
     useJUnitPlatform()
+    reports.html.required = true
+    reports.html.outputLocation = layout.projectDirectory.dir("test-report")
   }
   ktlintCheck {
     dependsOn += ktlintFormat
