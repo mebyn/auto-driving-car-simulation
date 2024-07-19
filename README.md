@@ -5,13 +5,18 @@
 1. Kotlin 2.0
 2. JDK 21
 
-## Technical
+## Technical Decisions
+
+- To keep the application simple, a basic CLI that reads `System.in` was used for user input.
+- The control centre will be the one responsible in instructing the car of the next operation and detecting if any
+  collisions occur.
 
 ## Assumptions
 
 ### Console
+
 - No specified expected behaviour if invalid input is provided. Console will continuously parse for input if invalid
-value is provided.
+  value is provided.
 
 ### Field
 
