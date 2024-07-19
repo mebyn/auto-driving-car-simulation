@@ -142,9 +142,11 @@ object SimulatorConsole {
     val commands =
       parseConsoleInput {
         print("Please enter the commands for car $name: ")
-        readlnOrNull()?.let {
-          ArrayDeque(it.chunked(1).map { op -> Command.valueOf(op) })
-        } ?: throw InvalidInputException("Invalid operation/s were provided!")
+        val commands =
+          readlnOrNull()?.let {
+            ArrayDeque(it.chunked(1).map { op -> Command.valueOf(op) })
+          } ?: throw InvalidInputException("Invalid operation/s were provided!")
+        commands.ifEmpty { throw InvalidInputException("No command was provided!") }
       }
 
     return Operation(car, commands)
