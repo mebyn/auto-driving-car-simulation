@@ -12,7 +12,10 @@
 ### Test Evidences | [Test Report](test-report/index.html)
 - Execute at project root `./gradlew test`. Will generate an HTML test report at `{projectDir}/test-report`
 ### Scenario 1
-![scenario-1.png](readme-artifacts/scenario-1.png)
+#### Exit
+![scenario-1-exit.png](readme-artifacts/scenario-1-exit.png)
+#### Start Over
+![scenario-1-start-over.png](readme-artifacts/scenario-1-start-over.png)
 ### Scenario 2
 ![scenario-2.png](readme-artifacts/scenario-2.png)
 
