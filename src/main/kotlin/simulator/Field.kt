@@ -1,5 +1,7 @@
 package com.zuhlke.simulator
 
+import com.zuhlke.simulator.console.InvalidInputException
+
 fun initializeField(input: String?): Field =
   runCatching {
     val (width, height) = input!!.split(' ').map(String::toLong)

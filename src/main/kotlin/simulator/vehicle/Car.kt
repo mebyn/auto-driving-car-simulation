@@ -1,7 +1,7 @@
 package com.zuhlke.simulator.vehicle
 
-import com.zuhlke.simulator.Command
 import com.zuhlke.simulator.Coordinate
+import com.zuhlke.simulator.controlcentre.Command
 
 data class Car(
   val name: String,

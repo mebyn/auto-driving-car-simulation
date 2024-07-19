@@ -5,13 +5,18 @@
 1. Kotlin 2.0
 2. JDK 21
 
+## Technical
+
 ## Assumptions
+
+### Console
+- No specified expected behaviour if invalid input is provided. Console will continuously parse for input if invalid
+value is provided.
 
 ### Field
 
-1. No limit constraint was specified for the field size, thus max limit of `Long` data type is used.
-2. No error handling was specified for **negative** field size. Console will continuously parse for input if invalid
-   value is provided.
+- No limit constraint was specified for the field size, thus max limit of `Long` data type is used.
+- No error handling was specified for **negative** field size. Prevent creation of field if negative value is provided.
 
 ### Simulation
 

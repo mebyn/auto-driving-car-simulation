@@ -1,23 +1,24 @@
-package com.zuhlke.simulator
+package com.zuhlke.simulator.controlcentre
 
+import com.zuhlke.simulator.Field
 import com.zuhlke.simulator.vehicle.Car
 
 class ControlCentre(
   private val field: Field,
-  private val inputOperations: List<CarOperation>,
+  inputOperations: List<Operation>,
 ) {
   private val gridState: MutableMap<String, OperationState> =
     inputOperations
       .associate {
         it.car.name to OperationState(it.car)
       }.toMutableMap()
-  private val copyOperations =
+  private val operations =
     inputOperations.map {
       it.copy(commands = ArrayDeque(it.commands))
     }
 
   fun runSimulation(): List<OperationState> {
-    val operationQueue = ArrayDeque(copyOperations)
+    val operationQueue = ArrayDeque(operations)
     var step = 0
     while (operationQueue.isNotEmpty()) {
       val processingQueue = ArrayDeque(operationQueue)
@@ -67,7 +68,7 @@ class ControlCentre(
     return gridState.values.toList()
   }
 
-  private fun ArrayDeque<CarOperation>.removeCollidedCars(collidedCars: Map<String, OperationState>) =
+  private fun ArrayDeque<Operation>.removeCollidedCars(collidedCars: Map<String, OperationState>) =
     collidedCars
       .map { (name, state) ->
         indexOfFirst { it.car.name == name }.takeIf { it >= 0 }?.let {
@@ -79,8 +80,3 @@ class ControlCentre(
   private val Car.hasCollision
     get() = gridState.any { it.key != name && it.value.car.coordinate == coordinate }
 }
-
-data class CarOperation(
-  val car: Car,
-  val commands: ArrayDeque<Command>,
-)

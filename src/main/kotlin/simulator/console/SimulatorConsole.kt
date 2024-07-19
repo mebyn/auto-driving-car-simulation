@@ -1,5 +1,11 @@
-package com.zuhlke.simulator
+package com.zuhlke.simulator.console
 
+import com.zuhlke.simulator.Coordinate
+import com.zuhlke.simulator.Field
+import com.zuhlke.simulator.controlcentre.Command
+import com.zuhlke.simulator.controlcentre.ControlCentre
+import com.zuhlke.simulator.controlcentre.Operation
+import com.zuhlke.simulator.initializeField
 import com.zuhlke.simulator.vehicle.Car
 import com.zuhlke.simulator.vehicle.Direction
 
@@ -17,13 +23,12 @@ object SimulatorConsole {
       when (simulate(field)) {
         ConsoleCommand.START_OVER -> continue
         ConsoleCommand.EXIT -> return
-        ConsoleCommand.UNKNOWN -> println("Invalid input provided. Only 1 or 2 is allowed\n")
       }
     }
   }
 
   private fun simulate(field: Field): ConsoleCommand {
-    var operations = emptyList<CarOperation>()
+    var operations = emptyList<Operation>()
     while (true) {
       println(
         """
@@ -36,7 +41,9 @@ object SimulatorConsole {
       runCatching {
         when (readlnOrNull()) {
           "1" -> operations = addNewOperation(operations)
-          "2" -> return runSimulation(field, operations)
+          "2" -> return runSimulation(field, operations).let {
+            getUserInputAfterSimulation()
+          }
 
           else -> println("Invalid input provided. Only 1 or 2 is allowed\n")
         }
@@ -45,15 +52,37 @@ object SimulatorConsole {
     }
   }
 
+  private fun getUserInputAfterSimulation(): ConsoleCommand =
+    parseConsoleInput {
+      println()
+      println(
+        """
+        Please choose from the following options:
+        [1] Start over
+        [2] Exit
+        """.trimIndent(),
+      )
+      print("Your input: ")
+      when (readlnOrNull()) {
+        "1" -> ConsoleCommand.START_OVER
+        "2" -> ConsoleCommand.EXIT
+        else -> throw InvalidInputException("Invalid input provided. Only 1 or 2 is allowed\n")
+      }
+    }
+
   private fun runSimulation(
     field: Field,
-    operations: List<CarOperation>,
-  ): ConsoleCommand {
+    operations: List<Operation>,
+  ) {
+    if (operations.isEmpty()) {
+      println("No cars provided! Unable to run simulation")
+      throw IllegalStateException("No cars provided! Unable to run simulation")
+    }
     val simulationResult = ControlCentre(field, operations).runSimulation()
     printListOfCars(operations)
     println("\nAfter simulation, the result is:")
-    val simulationMessages =
-      simulationResult.map {
+    simulationResult
+      .map {
         when {
           it.collisionInfo != null -> {
             val carsCollided =
@@ -65,31 +94,15 @@ object SimulatorConsole {
 
           else -> "${it.car.name}, (${it.car.coordinate.x}, ${it.car.coordinate.y}), ${it.car.direction.name}"
         }
-      }
-    simulationMessages.forEach { println("- $it") }
-    return parseConsoleInput {
-      println()
-      println(
-        """
-        Please choose from the following options:
-        [1] Start over
-        [2] Exit
-        """.trimIndent(),
-      )
-      when (readlnOrNull()) {
-        "1" -> ConsoleCommand.START_OVER
-        "2" -> ConsoleCommand.EXIT
-        else -> ConsoleCommand.UNKNOWN
-      }
-    }
+      }.onEach { println("- $it") }
   }
 
-  private fun addNewOperation(operations: List<CarOperation>): List<CarOperation> =
+  private fun addNewOperation(operations: List<Operation>): List<Operation> =
     (operations + inputCarDetails()).also {
       printListOfCars(it)
     }
 
-  private fun printListOfCars(operations: List<CarOperation>) {
+  private fun printListOfCars(operations: List<Operation>) {
     println("\nYour current list of cars are: ")
     operations.forEach { (car, commands) ->
       val carInformation =
@@ -108,7 +121,7 @@ object SimulatorConsole {
     }
   }
 
-  private fun inputCarDetails(): CarOperation {
+  private fun inputCarDetails(): Operation {
     val name =
       parseConsoleInput {
         print("\nPlease enter the name of the car: ")
@@ -134,19 +147,9 @@ object SimulatorConsole {
         } ?: throw InvalidInputException("Invalid operation/s were provided!")
       }
 
-    return CarOperation(car, commands)
+    return Operation(car, commands)
   }
 }
-
-enum class ConsoleCommand {
-  START_OVER,
-  EXIT,
-  UNKNOWN,
-}
-
-class InvalidInputException(
-  message: String = "",
-) : Exception(message)
 
 private fun <T> parseConsoleInput(invoke: () -> T): T {
   while (true) {

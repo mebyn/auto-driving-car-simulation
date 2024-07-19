@@ -1,4 +1,4 @@
-package com.zuhlke.simulator
+package com.zuhlke.simulator.controlcentre
 
 enum class Command {
   L, // Rotate car by 90 degrees left

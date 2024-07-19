@@ -1,12 +1,12 @@
-package simulator
+package simulator.controlcentre
 
-import com.zuhlke.simulator.CarOperation
-import com.zuhlke.simulator.Command.F
-import com.zuhlke.simulator.Command.L
-import com.zuhlke.simulator.Command.R
-import com.zuhlke.simulator.ControlCentre
 import com.zuhlke.simulator.Coordinate
 import com.zuhlke.simulator.Field
+import com.zuhlke.simulator.controlcentre.Command.F
+import com.zuhlke.simulator.controlcentre.Command.L
+import com.zuhlke.simulator.controlcentre.Command.R
+import com.zuhlke.simulator.controlcentre.ControlCentre
+import com.zuhlke.simulator.controlcentre.Operation
 import com.zuhlke.simulator.vehicle.Car
 import com.zuhlke.simulator.vehicle.Direction
 import org.assertj.core.api.Assertions.assertThat
@@ -17,7 +17,7 @@ class ControlCentreTest {
   fun `should move one car to correct position with correct direction after command FFRFFFFRRL`() {
     val operations =
       listOf(
-        CarOperation(
+        Operation(
           Car("PRIUS", Coordinate(1, 2), Direction.N),
           ArrayDeque(
             listOf(F, F, R, F, F, F, F, R, R, L),
@@ -42,7 +42,7 @@ class ControlCentreTest {
   fun `should move one car to correct position with correct direction after command FFLFFFFFFF`() {
     val operations =
       listOf(
-        CarOperation(
+        Operation(
           Car("MUSTANG", Coordinate(7, 8), Direction.W),
           ArrayDeque(
             listOf(F, F, L, F, F, F, F, F, F, F),
@@ -67,7 +67,7 @@ class ControlCentreTest {
   fun `should stop moving the car and return last position if move coordinate is less than 0`() {
     val operations =
       listOf(
-        CarOperation(
+        Operation(
           Car("MUSTANG", Coordinate(3, 3), Direction.W),
           ArrayDeque(
             listOf(F, L, F, F, F, F, F),
@@ -92,7 +92,7 @@ class ControlCentreTest {
   fun `should stop moving the car and return last position if move coordinate is greater than field size`() {
     val operations =
       listOf(
-        CarOperation(
+        Operation(
           Car("MUSTANG", Coordinate(3, 3), Direction.E),
           ArrayDeque(
             listOf(F, L, F, F, F, F, F),
@@ -117,13 +117,13 @@ class ControlCentreTest {
   fun `should stop moving the car when two cars collide`() {
     val operations =
       listOf(
-        CarOperation(
+        Operation(
           Car("LAMBO", Coordinate(1, 2), Direction.N),
           ArrayDeque(
             listOf(F, F, R, F, F, F, F, R, R, L),
           ),
         ),
-        CarOperation(
+        Operation(
           Car("FERRARI", Coordinate(7, 8), Direction.W),
           ArrayDeque(
             listOf(F, F, L, F, F, F, F, F, F, F),
@@ -168,13 +168,13 @@ class ControlCentreTest {
   fun `should stop moving the car when collision is detected at initial positions`() {
     val operations =
       listOf(
-        CarOperation(
+        Operation(
           Car("LAMBO", Coordinate(1, 2), Direction.N),
           ArrayDeque(
             listOf(F, F, R, F, F, F, F, R, R, L),
           ),
         ),
-        CarOperation(
+        Operation(
           Car("FERRARI", Coordinate(1, 2), Direction.W),
           ArrayDeque(
             listOf(F, F, L, F, F, F, F, F, F, F),
@@ -219,19 +219,19 @@ class ControlCentreTest {
   fun `should stop moving the car when three cars collide`() {
     val operations =
       listOf(
-        CarOperation(
+        Operation(
           Car("LAMBO", Coordinate(1, 2), Direction.N),
           ArrayDeque(
             listOf(F, F, R, F, F, F, F, R, R, L),
           ),
         ),
-        CarOperation(
+        Operation(
           Car("FERRARI", Coordinate(7, 8), Direction.W),
           ArrayDeque(
             listOf(F, F, L, F, F, F, F, F, F, F),
           ),
         ),
-        CarOperation(
+        Operation(
           Car("BUGATTI", Coordinate(4, 9), Direction.N),
           ArrayDeque(
             listOf(R, F, R, F, F, F, F, F, F, F),

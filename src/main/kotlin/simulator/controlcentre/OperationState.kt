@@ -1,4 +1,4 @@
-package com.zuhlke.simulator
+package com.zuhlke.simulator.controlcentre
 
 import com.zuhlke.simulator.vehicle.Car
 

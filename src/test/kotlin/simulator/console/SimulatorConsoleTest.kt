@@ -1,6 +1,6 @@
-package simulator
+package simulator.console
 
-import com.zuhlke.simulator.SimulatorConsole
+import com.zuhlke.main
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 
@@ -18,7 +18,7 @@ class SimulatorConsoleTest {
       2
       """.trimIndent()
     System.setIn(ByteArrayInputStream(input.toByteArray()))
-    SimulatorConsole.start()
+    main()
   }
 
   @Test
@@ -38,7 +38,7 @@ class SimulatorConsoleTest {
       2
       """.trimIndent()
     System.setIn(ByteArrayInputStream(input.toByteArray()))
-    SimulatorConsole.start()
+    main()
   }
 
   @Test
@@ -62,6 +62,6 @@ class SimulatorConsoleTest {
       2
       """.trimIndent()
     System.setIn(ByteArrayInputStream(input.toByteArray()))
-    SimulatorConsole.start()
+    main()
   }
 }

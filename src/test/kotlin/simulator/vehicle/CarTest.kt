@@ -1,7 +1,7 @@
-package simulator
+package simulator.vehicle
 
-import com.zuhlke.simulator.Command
 import com.zuhlke.simulator.Coordinate
+import com.zuhlke.simulator.controlcentre.Command
 import com.zuhlke.simulator.vehicle.Car
 import com.zuhlke.simulator.vehicle.Direction
 import org.assertj.core.api.Assertions.assertThat
