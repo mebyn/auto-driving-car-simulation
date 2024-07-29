@@ -5,7 +5,7 @@ import com.zuhlke.simulator.console.InvalidInputException
 fun initializeField(input: String?): Field =
   runCatching {
     val (width, height) = input!!.split(' ').map(String::toLong)
-    if (width < 0 || height < 0) throw InvalidInputException()
+    if (width <= 0 || height <= 0) throw InvalidInputException()
     Field(width, height)
   }.getOrElse {
     throw InvalidInputException(
@@ -22,10 +22,10 @@ data class Field(
   fun isCoordinateWithinBoundary(coordinate: Coordinate) = isCoordinateOutOfBounds(coordinate).not()
 
   private fun isCoordinateOutOfBounds(coordinate: Coordinate) =
-    coordinate.x <= 0 ||
-      coordinate.x >= width ||
-      coordinate.y <= 0 ||
-      coordinate.y >= height
+    coordinate.x < 0 ||
+      coordinate.x > width ||
+      coordinate.y < 0 ||
+      coordinate.y > height
 }
 
 data class Coordinate(
