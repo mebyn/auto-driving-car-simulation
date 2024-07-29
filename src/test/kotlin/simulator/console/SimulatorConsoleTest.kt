@@ -1,7 +1,11 @@
 package simulator.console
 
 import com.zuhlke.main
+import com.zuhlke.simulator.console.InvalidInputException
+import com.zuhlke.simulator.console.SimulatorConsole
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.io.ByteArrayInputStream
 
 class SimulatorConsoleTest {
@@ -63,5 +67,14 @@ class SimulatorConsoleTest {
       """.trimIndent()
     System.setIn(ByteArrayInputStream(input.toByteArray()))
     main()
+  }
+
+  @Test
+  fun `should throw exception when user provides an invalid input for x y Direction`() {
+    val exception =
+      assertThrows<InvalidInputException> {
+        SimulatorConsole.parseUserForInputCarDetail("10 10")
+      }
+    Assertions.assertThat(exception.message).isEqualTo("Invalid input. Input should be in x y Direction format")
   }
 }

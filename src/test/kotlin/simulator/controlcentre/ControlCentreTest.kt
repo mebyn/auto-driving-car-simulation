@@ -2,37 +2,32 @@ package simulator.controlcentre
 
 import com.zuhlke.simulator.Coordinate
 import com.zuhlke.simulator.Field
-import com.zuhlke.simulator.controlcentre.Command.F
-import com.zuhlke.simulator.controlcentre.Command.L
-import com.zuhlke.simulator.controlcentre.Command.R
+import com.zuhlke.simulator.controlcentre.Command
 import com.zuhlke.simulator.controlcentre.ControlCentre
-import com.zuhlke.simulator.controlcentre.Operation
+import com.zuhlke.simulator.controlcentre.SimulationInput
 import com.zuhlke.simulator.vehicle.Car
 import com.zuhlke.simulator.vehicle.Direction
+import com.zuhlke.simulator.vehicle.Direction.E
+import com.zuhlke.simulator.vehicle.Direction.N
+import com.zuhlke.simulator.vehicle.Direction.S
+import com.zuhlke.simulator.vehicle.Direction.W
+import com.zuhlke.simulator.vehicle.Orientation
 import org.assertj.core.api.Assertions.assertThat
 import kotlin.test.Test
 
 class ControlCentreTest {
   @Test
   fun `should move one car to correct position with correct direction after command FFRFFFFRRL`() {
-    val operations =
-      listOf(
-        Operation(
-          Car("PRIUS", Coordinate(1, 2), Direction.N),
-          ArrayDeque(
-            listOf(F, F, R, F, F, F, F, R, R, L),
-          ),
-        ),
-      )
     val result =
-      ControlCentre(
-        Field(10, 10),
-        operations,
-      ).runSimulation()
+      runSimulation(
+        10,
+        10,
+        TestSimulationInput("PRIUS", 1, 2, N, "FFRFFFFRRL"),
+      )
     assertThat(result).hasSize(1)
     result.first().let {
-      assertThat(it.car.direction).isEqualTo(Direction.S)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(S)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 4L)
     }
@@ -40,24 +35,16 @@ class ControlCentreTest {
 
   @Test
   fun `should move one car to correct position with correct direction after command FFLFFFFFFF`() {
-    val operations =
-      listOf(
-        Operation(
-          Car("MUSTANG", Coordinate(7, 8), Direction.W),
-          ArrayDeque(
-            listOf(F, F, L, F, F, F, F, F, F, F),
-          ),
-        ),
-      )
     val result =
-      ControlCentre(
-        Field(10, 10),
-        operations,
-      ).runSimulation()
+      runSimulation(
+        10,
+        10,
+        TestSimulationInput("MUSTANG", 7, 8, W, "FFLFFFFFFF"),
+      )
     assertThat(result).hasSize(1)
     result.first().let {
-      assertThat(it.car.direction).isEqualTo(Direction.S)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(S)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 1L)
     }
@@ -65,24 +52,16 @@ class ControlCentreTest {
 
   @Test
   fun `should prevent car from moving if move coordinate is less than 0`() {
-    val operations =
-      listOf(
-        Operation(
-          Car("MUSTANG", Coordinate(3, 3), Direction.W),
-          ArrayDeque(
-            listOf(F, L, F, F, F, F, F, L, L),
-          ),
-        ),
-      )
     val result =
-      ControlCentre(
-        Field(5, 5),
-        operations,
-      ).runSimulation()
+      runSimulation(
+        5,
+        5,
+        TestSimulationInput("PRIUS", 3, 3, W, "FLFFFFFLL"),
+      )
     assertThat(result).hasSize(1)
     result.first().let {
-      assertThat(it.car.direction).isEqualTo(Direction.N)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(N)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 2L)
         .hasFieldOrPropertyWithValue("y", 0L)
     }
@@ -90,24 +69,16 @@ class ControlCentreTest {
 
   @Test
   fun `should prevent car from moving if move coordinate is greater than field size`() {
-    val operations =
-      listOf(
-        Operation(
-          Car("MUSTANG", Coordinate(3, 3), Direction.E),
-          ArrayDeque(
-            listOf(F, L, F, F, F, F, F, R, R, R),
-          ),
-        ),
-      )
     val result =
-      ControlCentre(
-        Field(5, 5),
-        operations,
-      ).runSimulation()
+      runSimulation(
+        5,
+        5,
+        TestSimulationInput("PRIUS", 3, 3, E, "FLFFFFFRRR"),
+      )
     assertThat(result).hasSize(1)
     result.first().let {
-      assertThat(it.car.direction).isEqualTo(Direction.W)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(W)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 4L)
         .hasFieldOrPropertyWithValue("y", 5L)
     }
@@ -115,50 +86,33 @@ class ControlCentreTest {
 
   @Test
   fun `should stop moving the car when two cars collide`() {
-    val operations =
-      listOf(
-        Operation(
-          Car("LAMBO", Coordinate(1, 2), Direction.N),
-          ArrayDeque(
-            listOf(F, F, R, F, F, F, F, R, R, L),
-          ),
-        ),
-        Operation(
-          Car("FERRARI", Coordinate(7, 8), Direction.W),
-          ArrayDeque(
-            listOf(F, F, L, F, F, F, F, F, F, F),
-          ),
-        ),
-      )
     val result =
-      ControlCentre(
-        Field(10, 10),
-        operations,
-      ).runSimulation()
+      runSimulation(
+        10,
+        10,
+        TestSimulationInput("LAMBO", 1, 2, N, "FFRFFFFRRL"),
+        TestSimulationInput("FERRARI", 7, 8, W, "FFLFFFFFFF"),
+      )
     assertThat(result).hasSize(2)
-    result.find { it.car.name == "LAMBO" }.let {
+    result.find { it.name == "LAMBO" }.let {
       requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.E)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(E)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 4L)
       requireNotNull(it.collisionInfo).let { collision ->
         assertThat(collision.collidedCars).hasSize(1)
-        assertThat(collision.collidedCars)
-          .contains(Car("FERRARI", Coordinate(5, 4), Direction.S))
         assertThat(collision.step).isEqualTo(7)
       }
     }
-    result.find { it.car.name == "FERRARI" }.let {
+    result.find { it.name == "FERRARI" }.let {
       requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.S)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(S)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 4L)
       requireNotNull(it.collisionInfo).let { collision ->
         assertThat(collision.collidedCars).hasSize(1)
-        assertThat(collision.collidedCars)
-          .contains(Car("LAMBO", Coordinate(5, 4), Direction.E))
         assertThat(collision.step).isEqualTo(7)
       }
     }
@@ -166,190 +120,79 @@ class ControlCentreTest {
 
   @Test
   fun `should stop moving the car when collision is detected at initial positions`() {
-    val operations =
-      listOf(
-        Operation(
-          Car("LAMBO", Coordinate(1, 2), Direction.N),
-          ArrayDeque(
-            listOf(F, F, R, F, F, F, F, R, R, L),
-          ),
-        ),
-        Operation(
-          Car("FERRARI", Coordinate(1, 2), Direction.W),
-          ArrayDeque(
-            listOf(F, F, L, F, F, F, F, F, F, F),
-          ),
-        ),
-      )
     val result =
-      ControlCentre(
-        Field(10, 10),
-        operations,
-      ).runSimulation()
+      runSimulation(
+        10,
+        10,
+        TestSimulationInput("LAMBO", 1, 2, N, "FFRFFFFRRL"),
+        TestSimulationInput("FERRARI", 1, 2, W, "FFLFFFFFFF"),
+      )
     assertThat(result).hasSize(2)
-    result.find { it.car.name == "LAMBO" }.let {
+    result.find { it.name == "LAMBO" }.let {
       requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.N)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(N)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 1L)
         .hasFieldOrPropertyWithValue("y", 2L)
       requireNotNull(it.collisionInfo).let { collision ->
         assertThat(collision.collidedCars).hasSize(1)
-        assertThat(collision.collidedCars)
-          .contains(Car("FERRARI", Coordinate(1, 2), Direction.W))
         assertThat(collision.step).isEqualTo(0)
       }
     }
-    result.find { it.car.name == "FERRARI" }.let {
+    result.find { it.name == "FERRARI" }.let {
       requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.W)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(W)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 1L)
         .hasFieldOrPropertyWithValue("y", 2L)
       requireNotNull(it.collisionInfo).let { collision ->
         assertThat(collision.collidedCars).hasSize(1)
-        assertThat(collision.collidedCars)
-          .contains(Car("LAMBO", Coordinate(1, 2), Direction.N))
         assertThat(collision.step).isEqualTo(0)
       }
     }
   }
 
   @Test
-  fun `should stop moving the car when three cars collide`() {
-    val operations =
-      listOf(
-        Operation(
-          Car("LAMBO", Coordinate(1, 2), Direction.N),
-          ArrayDeque(
-            listOf(F, F, R, F, F, F, F, R, R, L),
-          ),
-        ),
-        Operation(
-          Car("FERRARI", Coordinate(7, 8), Direction.W),
-          ArrayDeque(
-            listOf(F, F, L, F, F, F, F, F, F, F),
-          ),
-        ),
-        Operation(
-          Car("BUGATTI", Coordinate(4, 9), Direction.N),
-          ArrayDeque(
-            listOf(R, F, R, F, F, F, F, F, F, F),
-          ),
-        ),
-      )
+  fun `should stop moving the car when 3 cars collide`() {
     val result =
-      ControlCentre(
-        Field(10, 10),
-        operations,
-      ).runSimulation()
-    assertThat(result).hasSize(3)
-    result.find { it.car.name == "LAMBO" }.let {
-      requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.E)
-      assertThat(it.car.coordinate)
-        .hasFieldOrPropertyWithValue("x", 5L)
-        .hasFieldOrPropertyWithValue("y", 4L)
-      requireNotNull(it.collisionInfo).let { collision ->
-        assertThat(collision.collidedCars).hasSize(2)
-        assertThat(collision.collidedCars)
-          .contains(Car("FERRARI", Coordinate(5, 4), Direction.S))
-        assertThat(collision.step).isEqualTo(8)
-      }
-    }
-    result.find { it.car.name == "FERRARI" }.let {
-      requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.S)
-      assertThat(it.car.coordinate)
-        .hasFieldOrPropertyWithValue("x", 5L)
-        .hasFieldOrPropertyWithValue("y", 4L)
-      requireNotNull(it.collisionInfo).let { collision ->
-        assertThat(collision.collidedCars).hasSize(2)
-        assertThat(collision.collidedCars)
-          .contains(Car("LAMBO", Coordinate(5, 4), Direction.E))
-        assertThat(collision.step).isEqualTo(8)
-      }
-    }
-    result.find { it.car.name == "BUGATTI" }.let {
-      requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.S)
-      assertThat(it.car.coordinate)
-        .hasFieldOrPropertyWithValue("x", 5L)
-        .hasFieldOrPropertyWithValue("y", 4L)
-      requireNotNull(it.collisionInfo).let { collision ->
-        assertThat(collision.collidedCars).hasSize(2)
-        assertThat(collision.collidedCars)
-          .contains(Car("LAMBO", Coordinate(5, 4), Direction.E))
-        assertThat(collision.step).isEqualTo(8)
-      }
-    }
-  }
-
-  @Test
-  fun `should stop moving the car when 5 cars collide`() {
-    val operations =
-      listOf(
-        Operation(
-          Car("LAMBO", Coordinate(1, 2), Direction.N),
-          ArrayDeque(
-            listOf(F, F, R, F, F, F, F, R, R, L),
-          ),
-        ),
-        Operation(
-          Car("FERRARI", Coordinate(7, 8), Direction.W),
-          ArrayDeque(
-            listOf(F, F, L, F, F, F, F, F, F, F),
-          ),
-        ),
-        Operation(
-          Car("BUGATTI", Coordinate(4, 9), Direction.N),
-          ArrayDeque(
-            listOf(R, F, R, F, F, F, F, F, F, F),
-          ),
-        ),
+      runSimulation(
+        10,
+        10,
+        TestSimulationInput("LAMBO", 1, 2, N, "FFRFFFFRRL"),
+        TestSimulationInput("FERRARI", 7, 8, W, "FFLFFFFFFF"),
+        TestSimulationInput("BUGATTI", 4, 9, N, "RFRFFFFFFF"),
       )
-    val result =
-      ControlCentre(
-        Field(10, 10),
-        operations,
-      ).runSimulation()
     assertThat(result).hasSize(3)
-    result.find { it.car.name == "LAMBO" }.let {
+    result.find { it.name == "LAMBO" }.let {
       requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.E)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(E)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 4L)
       requireNotNull(it.collisionInfo).let { collision ->
         assertThat(collision.collidedCars).hasSize(2)
-        assertThat(collision.collidedCars)
-          .contains(Car("FERRARI", Coordinate(5, 4), Direction.S))
         assertThat(collision.step).isEqualTo(8)
       }
     }
-    result.find { it.car.name == "FERRARI" }.let {
+    result.find { it.name == "FERRARI" }.let {
       requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.S)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(S)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 4L)
       requireNotNull(it.collisionInfo).let { collision ->
         assertThat(collision.collidedCars).hasSize(2)
-        assertThat(collision.collidedCars)
-          .contains(Car("LAMBO", Coordinate(5, 4), Direction.E))
         assertThat(collision.step).isEqualTo(8)
       }
     }
-    result.find { it.car.name == "BUGATTI" }.let {
+    result.find { it.name == "BUGATTI" }.let {
       requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.S)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(S)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 5L)
         .hasFieldOrPropertyWithValue("y", 4L)
       requireNotNull(it.collisionInfo).let { collision ->
         assertThat(collision.collidedCars).hasSize(2)
-        assertThat(collision.collidedCars)
-          .contains(Car("LAMBO", Coordinate(5, 4), Direction.E))
         assertThat(collision.step).isEqualTo(8)
       }
     }
@@ -357,39 +200,46 @@ class ControlCentreTest {
 
   @Test
   fun `should prompt and stop moving the car when collision is detected`() {
-    val operations =
-      listOf(
-        Operation(
-          Car("A", Coordinate(0, 0), Direction.E),
-          ArrayDeque(
-            listOf(F, F, F, F, F),
-          ),
-        ),
-        Operation(
-          Car("B", Coordinate(2, 0), Direction.W),
-          ArrayDeque(
-            listOf(F, F, F, F, F),
-          ),
-        ),
-      )
     val result =
-      ControlCentre(
-        Field(10, 10),
-        operations,
-      ).runSimulation()
+      runSimulation(
+        10,
+        10,
+        TestSimulationInput("A", 0, 0, E, "FFFFF"),
+        TestSimulationInput("B", 2, 0, W, "FFFFF"),
+      )
     assertThat(result).hasSize(2)
-    result.find { it.car.name == "A" }.let {
+    result.find { it.name == "A" }.let {
       requireNotNull(it)
-      assertThat(it.car.direction).isEqualTo(Direction.E)
-      assertThat(it.car.coordinate)
+      assertThat(it.direction).isEqualTo(E)
+      assertThat(it.coordinate)
         .hasFieldOrPropertyWithValue("x", 1L)
         .hasFieldOrPropertyWithValue("y", 0L)
       requireNotNull(it.collisionInfo).let { collision ->
         assertThat(collision.collidedCars).hasSize(1)
-        assertThat(collision.collidedCars)
-          .contains(Car("B", Coordinate(1, 0), Direction.W))
         assertThat(collision.step).isEqualTo(1)
       }
     }
   }
+
+  data class TestSimulationInput(
+    val name: String,
+    val x: Long,
+    val y: Long,
+    val direction: Direction,
+    val commands: String,
+  )
+
+  private fun runSimulation(
+    fieldWidth: Long,
+    fieldHeight: Long,
+    vararg simulationInput: TestSimulationInput,
+  ) = ControlCentre(
+    Field(fieldWidth, fieldHeight),
+    simulationInput.map {
+      SimulationInput(
+        Car(it.name, Orientation(Coordinate(it.x, it.y), it.direction)),
+        ArrayDeque(it.commands.chunked(1).map { op -> Command.valueOf(op) }),
+      )
+    },
+  ).runSimulation()
 }

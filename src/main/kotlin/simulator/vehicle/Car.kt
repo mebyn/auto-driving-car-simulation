@@ -1,14 +1,25 @@
 package com.zuhlke.simulator.vehicle
 
 import com.zuhlke.simulator.Coordinate
+import com.zuhlke.simulator.controlcentre.CollisionInfo
 import com.zuhlke.simulator.controlcentre.Command
 
 data class Car(
   val name: String,
+  val orientation: Orientation,
+  val collisionInfo: CollisionInfo? = null,
+) {
+  val coordinate
+    get() = orientation.coordinate
+  val direction
+    get() = orientation.direction
+}
+
+data class Orientation(
   val coordinate: Coordinate,
   val direction: Direction,
 ) {
-  fun move(command: Command): Car =
+  fun move(command: Command): Orientation =
     when (direction) {
       Direction.N -> {
         when (command) {
@@ -17,6 +28,7 @@ data class Car(
           Command.L -> copy(direction = Direction.W)
         }
       }
+
       Direction.S -> {
         when (command) {
           Command.F -> copy(coordinate = coordinate.copy(y = coordinate.y - 1))
@@ -24,6 +36,7 @@ data class Car(
           Command.L -> copy(direction = Direction.E)
         }
       }
+
       Direction.E -> {
         when (command) {
           Command.F -> copy(coordinate = coordinate.copy(x = coordinate.x + 1))
@@ -31,6 +44,7 @@ data class Car(
           Command.L -> copy(direction = Direction.N)
         }
       }
+
       Direction.W -> {
         when (command) {
           Command.F -> copy(coordinate = coordinate.copy(x = coordinate.x - 1))

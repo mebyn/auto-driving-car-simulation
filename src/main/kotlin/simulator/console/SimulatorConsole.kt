@@ -4,10 +4,11 @@ import com.zuhlke.simulator.Coordinate
 import com.zuhlke.simulator.Field
 import com.zuhlke.simulator.controlcentre.Command
 import com.zuhlke.simulator.controlcentre.ControlCentre
-import com.zuhlke.simulator.controlcentre.Operation
+import com.zuhlke.simulator.controlcentre.SimulationInput
 import com.zuhlke.simulator.initializeField
 import com.zuhlke.simulator.vehicle.Car
 import com.zuhlke.simulator.vehicle.Direction
+import com.zuhlke.simulator.vehicle.Orientation
 
 object SimulatorConsole {
   fun start() {
@@ -31,7 +32,7 @@ object SimulatorConsole {
   }
 
   private fun simulate(field: Field): ConsoleCommand {
-    var operations = emptyList<Operation>()
+    var carStates = emptyList<SimulationInput>()
     while (true) {
       println(
         """
@@ -43,8 +44,8 @@ object SimulatorConsole {
       print("Your input: ")
       runCatching {
         when (readlnOrNull()) {
-          "1" -> operations = addNewOperation(operations)
-          "2" -> return runSimulation(field, operations).let {
+          "1" -> carStates = addNewOperation(carStates)
+          "2" -> return runSimulation(field, carStates).let {
             getUserInputAfterSimulation()
           }
 
@@ -75,14 +76,14 @@ object SimulatorConsole {
 
   private fun runSimulation(
     field: Field,
-    operations: List<Operation>,
+    simulationInputs: List<SimulationInput>,
   ) {
-    if (operations.isEmpty()) {
+    if (simulationInputs.isEmpty()) {
       println("No cars provided! Unable to run simulation")
       throw IllegalStateException("No cars provided! Unable to run simulation")
     }
-    val simulationResult = ControlCentre(field, operations).runSimulation()
-    printListOfCars(operations)
+    val simulationResult = ControlCentre(field, simulationInputs).runSimulation()
+    printListOfCars(simulationInputs)
     println("\nAfter simulation, the result is:")
     simulationResult
       .map {
@@ -92,22 +93,22 @@ object SimulatorConsole {
               it.collisionInfo.collidedCars.joinToString { cc ->
                 "${cc.name} at (${cc.coordinate.x},${cc.coordinate.y})"
               }
-            "${it.car.name}, collides with $carsCollided at step ${it.collisionInfo.step}"
+            "${it.name}, collides with $carsCollided at step ${it.collisionInfo.step}"
           }
 
-          else -> "${it.car.name}, (${it.car.coordinate.x}, ${it.car.coordinate.y}), ${it.car.direction.name}"
+          else -> "${it.name}, (${it.coordinate.x}, ${it.coordinate.y}), ${it.direction.name}"
         }
       }.onEach { println("- $it") }
   }
 
-  private fun addNewOperation(operations: List<Operation>): List<Operation> =
-    (operations + inputCarDetails()).also {
+  private fun addNewOperation(carStates: List<SimulationInput>): List<SimulationInput> =
+    (carStates + inputCarDetails()).also {
       printListOfCars(it)
     }
 
-  private fun printListOfCars(operations: List<Operation>) {
+  private fun printListOfCars(carStates: List<SimulationInput>) {
     println("\nYour current list of cars are: ")
-    operations.forEach { (car, commands) ->
+    carStates.forEach { (car, commands) ->
       val carInformation =
         listOfNotNull(
           car.name,
@@ -124,7 +125,7 @@ object SimulatorConsole {
     }
   }
 
-  private fun inputCarDetails(): Operation {
+  private fun inputCarDetails(): SimulationInput {
     val name =
       parseConsoleInput {
         print("\nPlease enter the name of the car: ")
@@ -136,10 +137,8 @@ object SimulatorConsole {
     val car =
       parseConsoleInput {
         print("Please enter initial position of car $name in x y Direction format: ")
-        val (x, y, direction) =
-          readlnOrNull()?.split(' ')
-            ?: throw InvalidInputException("Invalid x y Direction format provided!")
-        Car(name, Coordinate(x.toLong(), y.toLong()), Direction.valueOf(direction.uppercase()))
+        val (x, y, direction) = parseUserForInputCarDetail(readlnOrNull())
+        Car(name, Orientation(Coordinate(x.toLong(), y.toLong()), Direction.valueOf(direction.uppercase())))
       }
 
     val commands =
@@ -152,8 +151,18 @@ object SimulatorConsole {
         commands.ifEmpty { throw InvalidInputException("No command was provided!") }
       }
 
-    return Operation(car, commands)
+    return SimulationInput(car, commands)
   }
+
+  fun parseUserForInputCarDetail(input: String?): Triple<String, String, String> =
+    runCatching {
+      input?.split(' ')?.let {
+        val (x, y, direction) = it
+        Triple(x, y, direction)
+      } ?: throw InvalidInputException("Invalid x y Direction format provided!")
+    }.getOrElse {
+      throw InvalidInputException("Invalid input. Input should be in x y Direction format")
+    }
 }
 
 private fun <T> parseConsoleInput(invoke: () -> T): T {
