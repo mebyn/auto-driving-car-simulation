@@ -28,8 +28,6 @@ class ControlCentre(
         val car = (currentState.car)
         val indexAtQueue = operationQueue.indexOfFirst { it.car.name == car.name }
         when {
-          !field.isCoordinateWithinBoundary(car.coordinate) -> operationQueue.removeAt(indexAtQueue)
-
           car.hasCollision -> {
             operationQueue.removeAt(indexAtQueue)
             val filterCollidedCars: (String) -> Map<String, OperationState> = {
@@ -59,7 +57,15 @@ class ControlCentre(
             }
           }
 
-          else -> gridState[car.name] = currentState.copy(car = car.move(commands.removeFirst()))
+          else ->
+            gridState[car.name] =
+              run {
+                val nextState = car.move(commands.removeFirst())
+                when {
+                  field.isCoordinateWithinBoundary(nextState.coordinate) -> currentState.copy(car = nextState)
+                  else -> currentState.copy(car = currentState.car.copy(direction = nextState.direction))
+                }
+              }
         }
         if (commands.isEmpty()) operationQueue.removeAt(indexAtQueue)
       }
