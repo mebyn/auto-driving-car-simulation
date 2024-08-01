@@ -10,18 +10,17 @@ import com.zuhlke.simulator.vehicle.Car
 import com.zuhlke.simulator.vehicle.Direction
 import com.zuhlke.simulator.vehicle.Orientation
 
+data class ConsoleInputResult<T>(
+  val result: T,
+  val message: String,
+)
+
 object SimulatorConsole {
   fun start() {
     while (true) {
       println("Welcome to Auto Driving Car Simulation!\n")
-      val field =
-        parseConsoleInput {
-          print("Please enter the width and height of the simulation field in x y format: ")
-          initializeField(readlnOrNull())
-        }
-
-      println("You have created a field of ${field.width} x ${field.height}\n")
-      when (simulate(field)) {
+      val inputField = getFieldWidthAndHeightFromInput(readlnOrNull())
+      when (simulate(inputField.result)) {
         ConsoleCommand.START_OVER -> continue
         ConsoleCommand.EXIT -> {
           println("\nThank you for running the simulation. Goodbye!")
@@ -29,6 +28,18 @@ object SimulatorConsole {
         }
       }
     }
+  }
+
+  fun getFieldWidthAndHeightFromInput(input: String?): ConsoleInputResult<Field> {
+    val field =
+      parseConsoleInput {
+        print("Please enter the width and height of the simulation field in x y format: ")
+        initializeField(input)
+      }
+    return ConsoleInputResult(
+      field,
+      "You have created a field of ${field.width} x ${field.height}\n"
+    )
   }
 
   private fun simulate(field: Field): ConsoleCommand {
@@ -44,7 +55,7 @@ object SimulatorConsole {
       print("Your input: ")
       runCatching {
         when (readlnOrNull()) {
-          "1" -> carStates = addNewOperation(carStates)
+          "1" -> carStates = addNewCar(carStates)
           "2" -> return runSimulation(field, carStates).let {
             getUserInputAfterSimulation()
           }
@@ -101,7 +112,7 @@ object SimulatorConsole {
       }.onEach { println("- $it") }
   }
 
-  private fun addNewOperation(carStates: List<SimulationInput>): List<SimulationInput> =
+  private fun addNewCar(carStates: List<SimulationInput>): List<SimulationInput> =
     (carStates + inputCarDetails()).also {
       printListOfCars(it)
     }

@@ -3,7 +3,7 @@ package simulator.console
 import com.zuhlke.main
 import com.zuhlke.simulator.console.InvalidInputException
 import com.zuhlke.simulator.console.SimulatorConsole
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.io.ByteArrayInputStream
@@ -75,6 +75,15 @@ class SimulatorConsoleTest {
       assertThrows<InvalidInputException> {
         SimulatorConsole.parseUserForInputCarDetail("10 10")
       }
-    Assertions.assertThat(exception.message).isEqualTo("Invalid input. Input should be in x y Direction format")
+    assertThat(exception.message).isEqualTo("Invalid input. Input should be in x y Direction format")
+  }
+
+  @Test
+  fun `should return field has been created message`() {
+    val inputResult = SimulatorConsole.getFieldWidthAndHeightFromInput("10 10")
+    assertThat(inputResult.result)
+      .hasFieldOrPropertyWithValue("width", 10L)
+      .hasFieldOrPropertyWithValue("height", 10L)
+    assertThat(inputResult.message).isEqualTo("You have created a field of 10 x 10\n")
   }
 }
