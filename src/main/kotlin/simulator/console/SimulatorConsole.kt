@@ -2,7 +2,6 @@ package com.zuhlke.simulator.console
 
 import com.zuhlke.simulator.Coordinate
 import com.zuhlke.simulator.Field
-import com.zuhlke.simulator.controlcentre.CollisionInfo
 import com.zuhlke.simulator.controlcentre.Command
 import com.zuhlke.simulator.controlcentre.ControlCentre
 import com.zuhlke.simulator.controlcentre.SimulationInput
@@ -35,8 +34,7 @@ class SimulatorConsole(private val consoleInput: BufferedReader) {
     }
   }
 
-  private fun List<Car>.printSimulationReport(
-  ) =
+  private fun List<Car>.printSimulationReport() =
     map { result ->
       val collisionInfo = result.collisionInfo
       when {
@@ -51,7 +49,6 @@ class SimulatorConsole(private val consoleInput: BufferedReader) {
         else -> "${result.name}, (${result.coordinate.x}, ${result.coordinate.y}), ${result.direction.name}"
       }
     }.onEach { println("- $it") }
-
 
   fun getFieldWidthAndHeightFromInput(): Field =
     parseConsoleInput {
@@ -84,7 +81,6 @@ class SimulatorConsole(private val consoleInput: BufferedReader) {
         else -> throw InvalidInputException("Invalid input provided. Only 1 or 2 is allowed\n")
       }
     }
-
 
   fun parseUserInputAfterSimulation(): ConsoleCommand =
     parseConsoleInput {
@@ -141,19 +137,21 @@ class SimulatorConsole(private val consoleInput: BufferedReader) {
     return SimulationInput(Car(name, orientation), commands)
   }
 
-  fun parseForCarName(): String = parseConsoleInput {
-    val name = consoleInput.readInputLine
-    require(name.isNotBlank()) { "Car name is mandatory" }
-    name
-  }
+  fun parseForCarName(): String =
+    parseConsoleInput {
+      val name = consoleInput.readInputLine
+      require(name.isNotBlank()) { "Car name is mandatory" }
+      name
+    }
 
   fun parseForCarCommands(): ArrayDeque<Command> =
     parseConsoleInput {
-      val commands = runCatching {
-        ArrayDeque(consoleInput.readInputLine.chunked(1).map { op -> Command.valueOf(op) })
-      }.getOrElse {
-        throw InvalidInputException("Invalid input. Only available commands are ${Command.entries.joinToString()}")
-      }
+      val commands =
+        runCatching {
+          ArrayDeque(consoleInput.readInputLine.chunked(1).map { op -> Command.valueOf(op) })
+        }.getOrElse {
+          throw InvalidInputException("Invalid input. Only available commands are ${Command.entries.joinToString()}")
+        }
       commands.ifEmpty { throw InvalidInputException("No command was provided!") }
     }
 
@@ -176,7 +174,10 @@ class SimulatorConsole(private val consoleInput: BufferedReader) {
     }
 }
 
-private fun <T> parseConsoleInput(messagePrompt: () -> String = { "Please enter input again: " }, invoke: () -> T): T {
+private fun <T> parseConsoleInput(
+  messagePrompt: () -> String = { "Please enter input again: " },
+  invoke: () -> T,
+): T {
   while (true) {
     runCatching {
       invoke()

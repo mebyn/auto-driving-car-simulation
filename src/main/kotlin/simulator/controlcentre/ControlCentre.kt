@@ -22,7 +22,7 @@ class ControlCentre(
     var step = 0
     while (operationQueue.isNotEmpty()) {
       val processingQueue = ArrayDeque(operationQueue)
-      while (operationQueue.isNotEmpty() && processingQueue.isNotEmpty()) {
+      while (processingQueue.isNotEmpty()) {
         val (car, commands) =
           processingQueue.removeFirst().let {
             val carInField = gridState[it.car.name] ?: throw IllegalStateException("Car should exist in the grid")
@@ -30,14 +30,10 @@ class ControlCentre(
           }
         val indexAtQueue = operationQueue.indexOfFirst { it.car.name == car.name }
         when {
-          car.hasCollision -> {
-            operationQueue.removeAt(indexAtQueue)
-            handleCollision(car, step, processingQueue, operationQueue)
-          }
-
+          car.hasCollision -> handleCollision(car, step)
           else -> gridState[car.name] = moveCar(car, commands.removeFirst())
         }
-        if (commands.isEmpty()) operationQueue.removeAt(indexAtQueue)
+        if (commands.isEmpty() || gridState[car.name]?.collisionInfo != null) operationQueue.removeAt(indexAtQueue)
       }
       step++
     }
@@ -47,8 +43,6 @@ class ControlCentre(
   private fun handleCollision(
     car: Car,
     step: Int,
-    processingQueue: ArrayDeque<SimulationInput>,
-    operationQueue: ArrayDeque<SimulationInput>,
   ) {
     val filterCollidedCars: (String) -> Map<String, Car> = {
       gridState
@@ -59,12 +53,7 @@ class ControlCentre(
       car.copy(
         collisionInfo = CollisionInfo(collidedCars = collidedCars.values.map { it }, step = step),
       )
-    val removedCars =
-      run {
-        processingQueue.removeCollidedCars(collidedCars)
-        operationQueue.removeCollidedCars(collidedCars)
-      }
-    removedCars.forEach { (name, state) ->
+    collidedCars.forEach { (name, state) ->
       gridState[name] =
         state.copy(
           collisionInfo =
@@ -86,15 +75,6 @@ class ControlCentre(
       else -> car.copy(orientation = car.orientation.copy(direction = nextOrientation.direction))
     }
   }
-
-  private fun ArrayDeque<SimulationInput>.removeCollidedCars(collidedCars: Map<String, Car>) =
-    collidedCars
-      .map { (name, state) ->
-        indexOfFirst { it.car.name == name }.takeIf { it >= 0 }?.let {
-          removeAt(it)
-        }
-        name to state
-      }.toMap()
 
   private val Car.hasCollision
     get() = gridState.any { (otherName, otherCar) -> otherName != name && otherCar.coordinate == coordinate }
