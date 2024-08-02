@@ -3,6 +3,7 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 plugins {
   application
   kotlin("jvm") version "2.0.0"
+  kotlin("plugin.power-assert") version "2.0.0"
   id("com.adarshr.test-logger") version "4.0.0"
   id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
 }

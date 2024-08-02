@@ -2,6 +2,7 @@ package com.zuhlke.simulator.console
 
 import com.zuhlke.simulator.Coordinate
 import com.zuhlke.simulator.Field
+import com.zuhlke.simulator.controlcentre.CollisionInfo
 import com.zuhlke.simulator.controlcentre.Command
 import com.zuhlke.simulator.controlcentre.ControlCentre
 import com.zuhlke.simulator.controlcentre.SimulationInput
@@ -9,42 +10,59 @@ import com.zuhlke.simulator.initializeField
 import com.zuhlke.simulator.vehicle.Car
 import com.zuhlke.simulator.vehicle.Direction
 import com.zuhlke.simulator.vehicle.Orientation
+import java.io.BufferedReader
 
-data class ConsoleInputResult<T>(
-  val result: T,
-  val message: String,
-)
+class SimulatorConsole(private val consoleInput: BufferedReader) {
+  lateinit var field: Field
 
-object SimulatorConsole {
-  fun start() {
+  fun start(): List<Car> {
     while (true) {
       println("Welcome to Auto Driving Car Simulation!\n")
-      val inputField = getFieldWidthAndHeightFromInput(readlnOrNull())
-      when (simulate(inputField.result)) {
+      print("Please enter the width and height of the simulation field in x y format: ")
+      field = getFieldWidthAndHeightFromInput()
+      val simulationInputs = parseSimulationInputs(emptyList())
+      val simulationResult = ControlCentre(field, simulationInputs).runSimulation()
+      simulationInputs.printOutput()
+      println("\nAfter simulation, the result is:")
+      simulationResult.printSimulationReport()
+      when (parseUserInputAfterSimulation()) {
         ConsoleCommand.START_OVER -> continue
         ConsoleCommand.EXIT -> {
           println("\nThank you for running the simulation. Goodbye!")
-          return
+          return simulationResult
         }
       }
     }
   }
 
-  fun getFieldWidthAndHeightFromInput(input: String?): ConsoleInputResult<Field> {
-    val field =
-      parseConsoleInput {
-        print("Please enter the width and height of the simulation field in x y format: ")
-        initializeField(input)
-      }
-    return ConsoleInputResult(
-      field,
-      "You have created a field of ${field.width} x ${field.height}\n"
-    )
-  }
+  private fun List<Car>.printSimulationReport(
+  ) =
+    map { result ->
+      val collisionInfo = result.collisionInfo
+      when {
+        collisionInfo != null -> {
+          val carsCollided =
+            collisionInfo.collidedCars.joinToString { cc ->
+              "${cc.name} at (${cc.coordinate.x},${cc.coordinate.y})"
+            }
+          "${result.name}, collides with $carsCollided at step ${collisionInfo.step}"
+        }
 
-  private fun simulate(field: Field): ConsoleCommand {
-    var carStates = emptyList<SimulationInput>()
-    while (true) {
+        else -> "${result.name}, (${result.coordinate.x}, ${result.coordinate.y}), ${result.direction.name}"
+      }
+    }.onEach { println("- $it") }
+
+
+  fun getFieldWidthAndHeightFromInput(): Field =
+    parseConsoleInput {
+      initializeField(consoleInput.readInputLine)
+    }.let { field ->
+      println("You have created a field of ${field.width} x ${field.height}\n")
+      field
+    }
+
+  fun parseSimulationInputs(simulationInputs: List<SimulationInput>): List<SimulationInput> =
+    parseConsoleInput {
       println(
         """
         Please choose from the following options:
@@ -53,21 +71,22 @@ object SimulatorConsole {
         """.trimIndent(),
       )
       print("Your input: ")
-      runCatching {
-        when (readlnOrNull()) {
-          "1" -> carStates = addNewCar(carStates)
-          "2" -> return runSimulation(field, carStates).let {
-            getUserInputAfterSimulation()
+      when (consoleInput.readInputLine) {
+        "1" -> parseSimulationInputs(addNewInput(simulationInputs))
+        "2" -> {
+          if (simulationInputs.isEmpty()) {
+            println("No simulation entry provided! Unable to run simulation")
+            throw IllegalStateException("No simulation entry provided! Unable to run simulation")
           }
-
-          else -> println("Invalid input provided. Only 1 or 2 is allowed\n")
+          simulationInputs
         }
-      }
-      println()
-    }
-  }
 
-  private fun getUserInputAfterSimulation(): ConsoleCommand =
+        else -> throw InvalidInputException("Invalid input provided. Only 1 or 2 is allowed\n")
+      }
+    }
+
+
+  fun parseUserInputAfterSimulation(): ConsoleCommand =
     parseConsoleInput {
       println()
       println(
@@ -78,48 +97,21 @@ object SimulatorConsole {
         """.trimIndent(),
       )
       print("Your input: ")
-      when (readlnOrNull()) {
+      when (consoleInput.readInputLine) {
         "1" -> ConsoleCommand.START_OVER
         "2" -> ConsoleCommand.EXIT
         else -> throw InvalidInputException("Invalid input provided. Only 1 or 2 is allowed\n")
       }
     }
 
-  private fun runSimulation(
-    field: Field,
-    simulationInputs: List<SimulationInput>,
-  ) {
-    if (simulationInputs.isEmpty()) {
-      println("No cars provided! Unable to run simulation")
-      throw IllegalStateException("No cars provided! Unable to run simulation")
-    }
-    val simulationResult = ControlCentre(field, simulationInputs).runSimulation()
-    printListOfCars(simulationInputs)
-    println("\nAfter simulation, the result is:")
-    simulationResult
-      .map {
-        when {
-          it.collisionInfo != null -> {
-            val carsCollided =
-              it.collisionInfo.collidedCars.joinToString { cc ->
-                "${cc.name} at (${cc.coordinate.x},${cc.coordinate.y})"
-              }
-            "${it.name}, collides with $carsCollided at step ${it.collisionInfo.step}"
-          }
-
-          else -> "${it.name}, (${it.coordinate.x}, ${it.coordinate.y}), ${it.direction.name}"
-        }
-      }.onEach { println("- $it") }
-  }
-
-  private fun addNewCar(carStates: List<SimulationInput>): List<SimulationInput> =
-    (carStates + inputCarDetails()).also {
-      printListOfCars(it)
+  private fun addNewInput(simulationInputs: List<SimulationInput>): List<SimulationInput> =
+    (simulationInputs + inputCarDetails()).also {
+      it.printOutput()
     }
 
-  private fun printListOfCars(carStates: List<SimulationInput>) {
+  private fun List<SimulationInput>.printOutput() {
     println("\nYour current list of cars are: ")
-    carStates.forEach { (car, commands) ->
+    forEach { (car, commands) ->
       val carInformation =
         listOfNotNull(
           car.name,
@@ -137,46 +129,54 @@ object SimulatorConsole {
   }
 
   private fun inputCarDetails(): SimulationInput {
-    val name =
-      parseConsoleInput {
-        print("\nPlease enter the name of the car: ")
-        val name = readlnOrNull()
-        require(!name.isNullOrBlank()) { "Car name is mandatory" }
-        name
-      }
+    print("\nPlease enter the name of the car: ")
+    val name = parseForCarName()
 
-    val car =
-      parseConsoleInput {
-        print("Please enter initial position of car $name in x y Direction format: ")
-        val (x, y, direction) = parseUserForInputCarDetail(readlnOrNull())
-        Car(name, Orientation(Coordinate(x.toLong(), y.toLong()), Direction.valueOf(direction.uppercase())))
-      }
+    print("Please enter initial position of car $name in x y Direction format: ")
+    val orientation = parseForCarOrientation()
 
-    val commands =
-      parseConsoleInput {
-        print("Please enter the commands for car $name: ")
-        val commands =
-          readlnOrNull()?.let {
-            ArrayDeque(it.chunked(1).map { op -> Command.valueOf(op) })
-          } ?: throw InvalidInputException("Invalid operation/s were provided!")
-        commands.ifEmpty { throw InvalidInputException("No command was provided!") }
-      }
+    print("Please enter the commands for car $name: ")
+    val commands = parseForCarCommands()
 
-    return SimulationInput(car, commands)
+    return SimulationInput(Car(name, orientation), commands)
   }
 
-  fun parseUserForInputCarDetail(input: String?): Triple<String, String, String> =
-    runCatching {
-      input?.split(' ')?.let {
-        val (x, y, direction) = it
-        Triple(x, y, direction)
-      } ?: throw InvalidInputException("Invalid x y Direction format provided!")
-    }.getOrElse {
-      throw InvalidInputException("Invalid input. Input should be in x y Direction format")
+  fun parseForCarName(): String = parseConsoleInput {
+    val name = consoleInput.readInputLine
+    require(name.isNotBlank()) { "Car name is mandatory" }
+    name
+  }
+
+  fun parseForCarCommands(): ArrayDeque<Command> =
+    parseConsoleInput {
+      val commands = runCatching {
+        ArrayDeque(consoleInput.readInputLine.chunked(1).map { op -> Command.valueOf(op) })
+      }.getOrElse {
+        throw InvalidInputException("Invalid input. Only available commands are ${Command.entries.joinToString()}")
+      }
+      commands.ifEmpty { throw InvalidInputException("No command was provided!") }
+    }
+
+  fun parseForCarOrientation(): Orientation =
+    parseConsoleInput {
+      val (coordinate, direction) =
+        runCatching {
+          consoleInput.readInputLine.split(' ').let {
+            val (x, y, direction) = it
+            val coordinate = Coordinate(x.toLong(), y.toLong())
+            when {
+              field.isCoordinateOutOfBounds(coordinate) -> throw InvalidInputException()
+              else -> coordinate to direction
+            }
+          }
+        }.getOrElse {
+          throw InvalidInputException("Invalid input. Input should be in x y Direction format and within field boundary")
+        }
+      Orientation(coordinate, Direction.valueOf(direction.uppercase()))
     }
 }
 
-private fun <T> parseConsoleInput(invoke: () -> T): T {
+private fun <T> parseConsoleInput(messagePrompt: () -> String = { "Please enter input again: " }, invoke: () -> T): T {
   while (true) {
     runCatching {
       invoke()
@@ -184,6 +184,10 @@ private fun <T> parseConsoleInput(invoke: () -> T): T {
       return it
     }.onFailure {
       println(it)
+      print(messagePrompt())
     }
   }
 }
+
+val BufferedReader.readInputLine: String
+  get() = readLine()

@@ -21,7 +21,7 @@ data class Field(
 ) {
   fun isCoordinateWithinBoundary(coordinate: Coordinate) = isCoordinateOutOfBounds(coordinate).not()
 
-  private fun isCoordinateOutOfBounds(coordinate: Coordinate) =
+  fun isCoordinateOutOfBounds(coordinate: Coordinate) =
     coordinate.x < 0 ||
       coordinate.x > width ||
       coordinate.y < 0 ||
